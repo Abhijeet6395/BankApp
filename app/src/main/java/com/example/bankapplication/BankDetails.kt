@@ -269,20 +269,58 @@ data class Customer(
     val balance: Double
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountsScreen(navController: NavController,bankViewModel: BankViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Accounts Screen",
-            color = Color.Red
-        )
-    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Accounts") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF6200EA),
+                    titleContentColor = Color.White
+                )
+            )
+        },
+        bottomBar = {
+            BottomAppBar(
+                containerColor = Color(0xFF6200EA),
+                contentColor = Color.White
+            ) {
+                IconButton(
+                    onClick = { navController.navigate("home") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Home, contentDescription = "Home")
+                }
+                IconButton(
+                    onClick = { navController.navigate("accounts") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.AccountCircle, contentDescription = "Accounts")
+                }
+                IconButton(
+                    onClick = { navController.navigate("settings") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                }
+            }
+        },
+        content = { innerPadding ->
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
