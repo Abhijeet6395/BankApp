@@ -27,7 +27,6 @@ data class User(val id: String, val name: String)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BankerDetails(navController: NavController, viewModel: BankViewModel) {
-    val userNavController = rememberNavController()
     val users by viewModel.users.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var userToRemove by remember { mutableStateOf<User?>(null) }
@@ -50,19 +49,19 @@ fun BankerDetails(navController: NavController, viewModel: BankViewModel) {
                 contentColor = Color.White
             ) {
                 IconButton(
-                    onClick = { userNavController.navigate("home") },
+                    onClick = { navController.navigate("home") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.Home, contentDescription = "Home")
                 }
                 IconButton(
-                    onClick = { userNavController.navigate("accounts") },
+                    onClick = { navController.navigate("accounts") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.AccountCircle, contentDescription = "Accounts")
                 }
                 IconButton(
-                    onClick = { userNavController.navigate("settings") },
+                    onClick = { navController.navigate("settings") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.Settings, contentDescription = "Settings")
@@ -160,6 +159,7 @@ fun BankerDetails(navController: NavController, viewModel: BankViewModel) {
         }
     )
 }
+
 
 @Composable
 fun UserListItem(user: User, onRemove: (Any?) -> Unit) {
@@ -401,8 +401,9 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountScreen(bankViewModel: BankViewModel,navController: NavController) {
+fun AccountScreen(bankViewModel: BankViewModel, navController: NavController) {
     var amount by remember { mutableStateOf("0") }
+    val currentBackStackEntry = navController.currentBackStackEntry
 
     Scaffold(
         topBar = {
@@ -420,24 +421,41 @@ fun AccountScreen(bankViewModel: BankViewModel,navController: NavController) {
                 contentColor = Color.White
             ) {
                 IconButton(
-                    onClick = { navController.navigate("home") },
+                    onClick = {
+                        if (currentBackStackEntry != null) {
+                            if (currentBackStackEntry.destination.route != "home") {
+                                navController.navigate("home")
+                            }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.Home, contentDescription = "Home")
                 }
                 IconButton(
-                    onClick = { navController.navigate("accounts") },
+                    onClick = {
+                        if (currentBackStackEntry != null) {
+                            if (currentBackStackEntry.destination.route != "accounts") {
+                                navController.navigate("accounts")
+                            }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.AccountCircle, contentDescription = "Accounts")
                 }
                 IconButton(
-                    onClick = { navController.navigate("settings") },
+                    onClick = {
+                        if (currentBackStackEntry != null) {
+                            if (currentBackStackEntry.destination.route != "settings") {
+                                navController.navigate("settings")
+                            }
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.Settings, contentDescription = "Settings")
                 }
-
             }
         },
         content = { innerPadding ->
@@ -485,3 +503,4 @@ fun AccountScreen(bankViewModel: BankViewModel,navController: NavController) {
         }
     )
 }
+
