@@ -68,8 +68,7 @@ fun EnterPinPage(navController: NavController, userType: String) {
             if (pin == correctPin) {
                 val destination = if (userType == "banker") "bankerDetails" else "customerDetails"
                 navController.navigate(destination) {
-
-                    popUpTo("login")
+                    popUpTo("login") { inclusive = true }
                 }
             } else {
                 showError = true
