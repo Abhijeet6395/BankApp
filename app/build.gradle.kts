@@ -55,6 +55,8 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.runtime.ktx)
+    implementation(libs.androidx.room.runtime.android)
+
 
 
     val nav_version = "2.7.7"

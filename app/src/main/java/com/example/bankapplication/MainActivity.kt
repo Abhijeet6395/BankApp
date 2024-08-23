@@ -1,9 +1,11 @@
 package com.example.bankapplication
 
+import AccountsScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,18 +29,26 @@ class MainActivity : ComponentActivity() {
                             userType = backStackEntry.arguments?.getString("userType") ?: ""
                         )
                     }
-composable("home"){}
-                    composable("accounts") {
-                        AccountsScreen(navController = navController, bankViewModel = bankViewModel)
-                    }
-                    composable("settings") {
-                        SettingsScreen(navController =  navController, bankViewModel = bankViewModel)
-                    }
                     composable("bankerDetails") {
-                        BankerDetails(navController = navController, viewModel = bankViewModel)
+                        BankerDetailsScreen(navController = navController, bankViewModel = bankViewModel)
                     }
                     composable("customerDetails") {
-                        CustomerScreen(navController = navController, viewModel = bankViewModel)
+                        CustomerDetailsScreen(navController = navController, bankViewModel = bankViewModel)
+                    }
+                    composable("accounts/{userType}") { backStackEntry ->
+                        AccountsScreen(
+                            navController = navController,
+                          bankViewModel = bankViewModel,
+                            userType = backStackEntry.arguments?.getString("userType") ?: ""
+                        )
+                    }
+                    composable("settings/{userType}") { backStackEntry ->
+                        SettingsScreen(
+                            navController = navController,
+                            bankViewModel = bankViewModel,
+                            userType = backStackEntry.arguments?.getString("userType") ?: "",
+                            currentUserEmail = toString()
+                        )
                     }
                 }
             }

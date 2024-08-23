@@ -1,194 +1,135 @@
 package com.example.bankapplication
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BankerDetails(navController: NavController, viewModel: BankViewModel) {
-    val users by viewModel.users.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-    var showAddUserDialog by remember { mutableStateOf(false) }
-    var newUserName by remember { mutableStateOf("") }
-    var newAccountType by remember { mutableStateOf("") }
-    var initialBalance by remember { mutableStateOf("") }
+fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel = viewModel()) {
+    val bankManagers by bankViewModel.bankManagers.collectAsState(emptyMap())
+    val managerEmail = bankManagers.keys.firstOrNull()
+    val banker by remember(managerEmail) { derivedStateOf { managerEmail?.let { bankManagers[it] } } }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Banker Details") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF6200EA),
-                    titleContentColor = Color.White
-                )
+                title = { Text("Bank Manager") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            BottomNavigationBar(navController = navController, userType = "banker")
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { query -> searchQuery = query },
-                label = { Text("Search User") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            banker?.let {
+                if (navController.currentBackStackEntry?.destination?.route == "bankerDetails") {
+                    Text(
+                        text = "Bank Manager Details",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Name: ${it.name}")
+                    Text(text = "Email: ${it.email}")
+                    Text(text = "Branch: ${it.branch}")
+                    Text(text = "Role: ${it.role}")
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                // Account Screen Content (Add/Remove Users)
+                if (navController.currentBackStackEntry?.destination?.route == "bankerAccounts") {
+                    ManageAccountsSection(bankViewModel = bankViewModel)
+                }
 
-            LazyColumn {
-                items(users.filter {
-                    it.name.contains(searchQuery, ignoreCase = true)
-                }) { user ->
-                    UserListItem(user = user, onRemove = { viewModel.removeUser(user) })
+                // Settings Screen Content (Change PIN)
+                if (navController.currentBackStackEntry?.destination?.route == "settings") {
+                    SettingsScreen(
+                        navController = navController,
+                        bankViewModel = bankViewModel,
+                        userType = "banker",
+                        currentUserEmail = String()
+                    )
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(16.dp))
+@Composable
+fun BankManagerDetails(manager: BankManager) {
+    Text(
+        text = "Bank Manager Details",
+        style = MaterialTheme.typography.headlineLarge
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(text = "Name: ${manager.name}")
+    Text(text = "Email: ${manager.email}")
+    Text(text = "Branch: ${manager.branch}")
+    Text(text = "Role: ${manager.role}")
+}
 
-            Button(onClick = { showAddUserDialog = true }) {
-                Text("Add New User")
-            }
+@Composable
+fun ManageAccountsSection(bankViewModel: BankViewModel) {
+    var newName by remember { mutableStateOf("") }
+    var newEmail by remember { mutableStateOf("") }
+    var newPin by remember { mutableStateOf("") }
+    var newAccountNumber by remember { mutableStateOf("") }
+    var newAccountType by remember { mutableStateOf("") }
+    var initialBalance by remember { mutableStateOf("") }
 
-            if (showAddUserDialog) {
-                AlertDialog(
-                    onDismissRequest = { showAddUserDialog = false },
-                    title = { Text("Add New User") },
-                    text = {
-                        Column {
-                            OutlinedTextField(
-                                value = newUserName,
-                                onValueChange = { newUserName = it },
-                                label = { Text("User Name") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedTextField(
-                                value = newAccountType,
-                                onValueChange = { newAccountType = it },
-                                label = { Text("Account Type (Savings/Current)") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedTextField(
-                                value = initialBalance,
-                                onValueChange = { initialBalance = it },
-                                label = { Text("Initial Balance") },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    },
-                    confirmButton = {
-                        Button(onClick = {
-                            if (newUserName.isNotBlank() && newAccountType.isNotBlank() && initialBalance.isNotBlank()) {
-                                val newUser = User(
-                                    id = (users.size + 1).toString(),
-                                    name = newUserName,
-                                    accountType = newAccountType,
-                                    balance = initialBalance.toDoubleOrNull() ?: 0.0
-                                )
-                                viewModel.addUser(newUser)
-                                newUserName = ""
-                                newAccountType = ""
-                                initialBalance = ""
-                                showAddUserDialog = false
-                            }
-                        }) {
-                            Text("Add")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showAddUserDialog = false }) {
-                            Text("Cancel")
-                        }
-                    }
+    Column {
+        Text(text = "Manage Accounts", style = MaterialTheme.typography.headlineLarge)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextField(value = newName, onValueChange = { newName = it }, label = { Text("Name") })
+        TextField(value = newEmail, onValueChange = { newEmail = it }, label = { Text("Email") })
+        TextField(value = newPin, onValueChange = { newPin = it }, label = { Text("Pin") })
+
+        TextField(
+            value = newAccountType,
+            onValueChange = { newAccountType = it },
+            label = { Text("Account Type") })
+        TextField(
+            value = initialBalance,
+            onValueChange = { initialBalance = it },
+            label = { Text("Initial Balance") })
+
+        Button(
+            onClick = {
+                bankViewModel.addCustomer(
+                    name = newName,
+                    email = newEmail,
+                    pin = newPin.toIntOrNull().toString(),
+                    accountType = newAccountType,
+                    initialBalance = initialBalance.toDoubleOrNull() ?: 0.0
                 )
-            }
-        }
-    }
-}
 
-@Composable
-fun UserListItem(user: User, onRemove: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = user.name)
-        IconButton(onClick = { onRemove() }) {
-            Icon(Icons.Default.Delete, contentDescription = "Remove User")
+                newName = ""
+                newEmail = ""
+                newPin = ""
+                newAccountNumber = ""
+                newAccountType = ""
+                initialBalance = ""
+            },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Add Customer")
         }
-    }
-}
-@Composable
-fun AddUserDialog(viewModel: BankViewModel) {
-    var newUserName by remember { mutableStateOf("") }
-    var newAccountType by remember { mutableStateOf("savings") } // Default to "savings" or "current"
-    var showAddUserDialog by remember { mutableStateOf(false) }
-
-    if (showAddUserDialog) {
-        AlertDialog(
-            onDismissRequest = { showAddUserDialog = false },
-            title = { Text(text = "Add New User") },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = newUserName,
-                        onValueChange = { newUserName = it },
-                        label = { Text("User Name") }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = newAccountType,
-                        onValueChange = { newAccountType = it },
-                        label = { Text("Account Type (savings/current)") }
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (newUserName.isNotBlank() && (newAccountType == "savings" || newAccountType == "current")) {
-                        val newUser = User(
-                            id = (viewModel.users.value.size + 1).toString(),
-                            name = newUserName,
-                            accountType = newAccountType,
-                            balance = 0.0
-                        )
-                        viewModel.addUser(newUser)
-                        newUserName = ""
-                        newAccountType = "savings" // Reset account type to default
-                        showAddUserDialog = false
-                    }
-                }) {
-                    Text("Add")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showAddUserDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }

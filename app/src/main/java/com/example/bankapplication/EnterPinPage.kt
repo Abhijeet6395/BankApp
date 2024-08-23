@@ -10,15 +10,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun EnterPinPage(navController: NavController, userType: String) {
+fun EnterPinPage(navController: NavController, userType: String, bankViewModel: BankViewModel = viewModel()) {
+    var email by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
-    val correctPin = "1234" // Example correct PIN
 
     Column(
         modifier = Modifier
@@ -35,6 +37,25 @@ fun EnterPinPage(navController: NavController, userType: String) {
         Spacer(modifier = Modifier.height(20.dp))
 
         OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+                showError = false
+            },
+            label = { Text("Email") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.Black
+            ),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedTextField(
             value = pin,
             onValueChange = {
                 pin = it
@@ -49,14 +70,15 @@ fun EnterPinPage(navController: NavController, userType: String) {
                 color = Color.Black
             ),
             singleLine = true,
-            maxLines = 1
+            maxLines = 1,
+            visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         if (showError) {
             Text(
-                text = "Incorrect PIN",
+                text = "Incorrect email or PIN",
                 color = Color.Red,
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -65,7 +87,8 @@ fun EnterPinPage(navController: NavController, userType: String) {
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
-            if (pin == correctPin) {
+            val result = bankViewModel.signIn(email, pin, userType)
+            if (result) {
                 val destination = if (userType == "banker") "bankerDetails" else "customerDetails"
                 navController.navigate(destination) {
                     popUpTo("login") { inclusive = true }

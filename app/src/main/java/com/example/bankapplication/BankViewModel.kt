@@ -3,77 +3,188 @@ package com.example.bankapplication
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-
-data class User(
-    val id: String,
-    val name: String,
-    val accountType: String = "Savings",
-    val balance: Double
-)
-
-data class Account(
-    val id: String,
-    val name: String,
-    val balance: Double,
-    val type:String
-)
+import kotlinx.coroutines.flow.update
+import java.util.UUID
 
 class BankViewModel : ViewModel() {
-    private val _accounts = MutableStateFlow<List<Account>>(emptyList())
-    val accounts: StateFlow<List<Account>> get() = _accounts
 
-    private val _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> get() = _users
+    private val _customers = MutableStateFlow(Customer.customerMap)
+    val customers: StateFlow<Map<String, Customer>> = _customers
 
-    private val _customer = MutableStateFlow<User?>(null)
-    val customer: StateFlow<User?> get() = _customer
+    private val _bankManagers = MutableStateFlow(BankManager.bankerMap)
+    val bankManagers: StateFlow<Map<String, BankManager>> = _bankManagers
 
-    fun addAccount(account: Account) {
-        _accounts.value += account
-        updateUsersList()
+    init {
+        addBankManager(
+            "Admin",
+            "admin@example.com",
+            1234.toString(),
+            "000111",
+            "Main Branch",
+            "Admin"
+        )
     }
 
-    fun addUser(user: User) {
-        _users.value += user
-    }
-
-    fun removeUser(user: User) {
-        _users.value = _users.value.filterNot { it.id == user.id }
-        _accounts.value = _accounts.value.filterNot { it.id == user.id }
-    }
-
-    fun updateCustomer(customer: User) {
-        _customer.value = customer
-    }
-
-    fun addMoney(amount: Double) {
-        _customer.value?.let { customer ->
-            _customer.value = customer.copy(balance = customer.balance + amount)
+    fun editBankManager(
+        email: String,
+        newName: String? = null,
+        newPin: Int? = null,
+        newAccountNumber: String? = null,
+        newBranch: String? = null,
+        newRole: String? = null
+    ) {
+        _bankManagers.update { bankerMap ->
+            val mutableMap = bankerMap.toMutableMap()
+            mutableMap[email]?.let { manager ->
+                mutableMap[email] = BankManager(
+                    name = newName ?: manager.name,
+                    email = manager.email,
+                    pin = newPin?.toString() ?: manager.pin,
+                    accountNumber = newAccountNumber ?: manager.accountNumber,
+                    branch = newBranch ?: manager.branch,
+                    role = newRole ?: manager.role,
+                    accounts = manager.accounts
+                )
+            }
+            mutableMap
         }
     }
 
-    fun withdrawMoney(amount: Double) {
-        _customer.value?.let { customer ->
-            if (customer.balance >= amount) {
-                _customer.value = customer.copy(balance = customer.balance - amount)
+    fun addBankManager(
+        name: String,
+        email: String,
+        pin: String,
+        accountNumber: String,
+        branch: String,
+        role: String
+    ) {
+        val newManager = BankManager(name, email, pin, accountNumber, branch, role, emptyList())
+        _bankManagers.update { bankerMap ->
+            (bankerMap + (email to newManager)) as MutableMap<String, BankManager>
+        }
+    }
+
+    fun addMoney(email: String, amount: Double) {
+        _customers.update { customerMap ->
+            val mutableMap = customerMap.toMutableMap()
+            mutableMap[email]?.let { customer ->
+                val updatedAccount = Account(
+                    customer.account.accountNumber,
+                    customer.account.accountType,
+                    customer.account.balance + amount
+                )
+                mutableMap[email] = Customer(customer.name, customer.email, customer.pin, updatedAccount)
+            }
+            mutableMap
+        }
+    }
+
+    fun withdrawMoney(email: String, amount: Double) {
+        _customers.update { customerMap ->
+            val mutableMap = customerMap.toMutableMap()
+            mutableMap[email]?.let { customer ->
+                if (customer.account.balance >= amount) {
+                    val updatedAccount = Account(
+                        customer.account.accountNumber,
+                        customer.account.accountType,
+                        customer.account.balance - amount
+                    )
+                    mutableMap[email] = Customer(customer.name, customer.email, customer.pin, updatedAccount)
+                }
+            }
+            mutableMap
+        }
+    }
+
+    fun editCustomerPin(email: String, newPin: Int) {
+        _customers.update { customerMap ->
+            val mutableMap = customerMap.toMutableMap()
+            mutableMap[email]?.let { customer ->
+                if (newPin != null) {
+                    mutableMap[email] = Customer(customer.name, customer.email, newPin.toString(), customer.account)
+                }
+            }
+            mutableMap
+        }
+    }
+
+    fun signIn(email: String, pin: String, userType: String): Boolean {
+        return when (userType) {
+            "customer" -> {
+                _customers.value[email]?.let {
+                    it.pin == pin
+                } ?: false
+            }
+
+            "banker" -> {
+                _bankManagers.value[email]?.let {
+                    it.pin == pin
+                } ?: false
+            }
+
+            else -> false
+        }
+    }
+
+    fun addCustomer(
+        name: String,
+        email: String,
+        pin: String,
+        accountType: String,
+        initialBalance: Double
+    ) {
+        val newCustomer = Customer(name, email, pin, Account(UUID.randomUUID().toString(), accountType, initialBalance))
+        _customers.update { currentMap ->
+            currentMap.toMutableMap().apply {
+                this[email] = newCustomer
             }
         }
     }
-    private fun updateUsersList() {
-        val updatedUser = _customer.value
-        if (updatedUser != null) {
-            _users.value = _users.value.map {
-                if (it.id == updatedUser.id) updatedUser else it
+
+    fun removeCustomer(name: String,email: String,accountNumber: String) {
+        _customers.update { currentMap ->
+            currentMap.toMutableMap().apply {
+                remove(email)
             }
         }
     }
-    fun updateCustomerName(newName: String) {
-        _customer.value = _customer.value?.copy(name = newName)
-        updateUsersList()
-    }
-    fun getUserByAccount(account: Account): User? {
-        return _users.value.find { user ->
-            user.id == account.id
+
+
+
+
+
+    fun changePin(email: String, currentPin: String, newPin: Int) {
+        _bankManagers.update { bankerMap ->
+            val mutableMap = bankerMap.toMutableMap()
+            mutableMap[email]?.let {
+                if (it.pin == currentPin) {
+                    mutableMap[email] = BankManager(
+                        name = it.name,
+                        email = it.email,
+                        pin = newPin.toString(),
+                        accountNumber = it.accountNumber,
+                        branch = it.branch,
+                        role = it.role,
+                        accounts = it.accounts
+                    )
+                }
+            }
+            mutableMap
+        }
+
+        _customers.update { customerMap ->
+            val mutableMap = customerMap.toMutableMap()
+            mutableMap[email]?.let {
+                if (it.pin == currentPin) {
+                    mutableMap[email] = Customer(
+                        name = it.name,
+                        email = it.email,
+                        pin = newPin.toString(),
+                        account = it.account
+                    )
+                }
+            }
+            mutableMap
         }
     }
 }
