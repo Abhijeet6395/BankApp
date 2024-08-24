@@ -41,7 +41,7 @@ class BankViewModel : ViewModel() {
                     email = manager.email,
                     pin = newPin?.toString() ?: manager.pin,
                     accountNumber = newAccountNumber ?: manager.accountNumber,
-                    branch = newBranch ?: manager.branch,
+                    branch =    newBranch ?: manager.branch,
                     role = newRole ?: manager.role,
                     accounts = manager.accounts
                 )
@@ -100,9 +100,7 @@ class BankViewModel : ViewModel() {
         _customers.update { customerMap ->
             val mutableMap = customerMap.toMutableMap()
             mutableMap[email]?.let { customer ->
-                if (newPin != null) {
-                    mutableMap[email] = Customer(customer.name, customer.email, newPin.toString(), customer.account)
-                }
+                mutableMap[email] = Customer(customer.name, customer.email, newPin.toString(), customer.account)
             }
             mutableMap
         }
@@ -141,7 +139,7 @@ class BankViewModel : ViewModel() {
         }
     }
 
-    fun removeCustomer(name: String,email: String,accountNumber: String) {
+    fun removeCustomer(name: String,email: String) {
         _customers.update { currentMap ->
             currentMap.toMutableMap().apply {
                 remove(email)
