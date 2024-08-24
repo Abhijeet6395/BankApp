@@ -152,8 +152,9 @@ class BankViewModel : ViewModel() {
 
 
 
+    fun changePin(email: String, currentPin: String, newPin: Int): Boolean {
+        var pinChanged = false
 
-    fun changePin(email: String, currentPin: String, newPin: Int) {
         _bankManagers.update { bankerMap ->
             val mutableMap = bankerMap.toMutableMap()
             mutableMap[email]?.let {
@@ -167,6 +168,7 @@ class BankViewModel : ViewModel() {
                         role = it.role,
                         accounts = it.accounts
                     )
+                    pinChanged = true
                 }
             }
             mutableMap
@@ -182,9 +184,12 @@ class BankViewModel : ViewModel() {
                         pin = newPin.toString(),
                         account = it.account
                     )
+                    pinChanged = true
                 }
             }
             mutableMap
         }
+
+        return pinChanged
     }
 }
