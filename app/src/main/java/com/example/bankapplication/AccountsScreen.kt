@@ -27,6 +27,10 @@ fun AccountsScreen(
     val scope = rememberCoroutineScope()
     val customers by bankViewModel.customers.collectAsState()
 
+    var showAddMoneyDialog by remember { mutableStateOf(false) }
+    var showWithdrawMoneyDialog by remember { mutableStateOf(false) }
+    var addAmount by remember { mutableStateOf("") }
+    var withdrawAmount by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
@@ -62,99 +66,198 @@ fun AccountsScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Customers")
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Display customers in a LazyColumn
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                if (customers.isEmpty()) {
-                    item {
-                        Text(
-                            text = "No users present",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Red,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
+            // Display content based on userType
+            if (userType == "customer") {
+                // Customer specific UI
+                Row {
+                    Button(onClick = { showAddMoneyDialog = true }) {
+                        Text("Add Money")
                     }
-                } else {
-                    items(customers.toList()) { (email, customer) ->
-                        Text(
-                            text = "${customer.name} (${customer.email})",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(onClick = { showWithdrawMoneyDialog = true }) {
+                        Text("Withdraw Money")
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Input fields and buttons for adding customers
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email ID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = pin,
-                onValueChange = { pin = it },
-                label = { Text("PIN") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row {
-                Button(onClick = {
-                    if (email.isNotBlank() && name.isNotBlank() && pin.isNotBlank()) {
-                        if (isValidEmail(email)) {
-                            bankViewModel.addCustomer(
-                                name = name,
-                                email = email,
-                                pin = pin,
-                                accountType = "Savings",
-                                initialBalance = 0.0
+                Spacer(modifier = Modifier.height(16.dp))
+            } else if (userType == "banker") {
+                // Banker specific UI
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    if (customers.isEmpty()) {
+                        item {
+                            Text(
+                                text = "No users present",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Red,
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
-                            scope.launch {
-                                Toast.makeText(context, "Customer added successfully", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            Toast.makeText(context, "Please enter a valid email (must contain '@' and end with '.com')", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                        items(customers.toList()) { (email, customer) ->
+                            Text(
+                                text = "${customer.name} (${customer.email})",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
                     }
-                }) {
-                    Text("Add Customer")
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = {
-                    showRemoveDialog = true
-                }) {
-                    Text("Remove Customer")
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email ID") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = pin,
+                    onValueChange = { pin = it },
+                    label = { Text("PIN") },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row {
+                    Button(onClick = {
+                        if (email.isNotBlank() && name.isNotBlank() && pin.isNotBlank()) {
+                            if (isValidEmail(email)) {
+                                bankViewModel.addCustomer(
+                                    name = name,
+                                    email = email,
+                                    pin = pin,
+                                    accountType = "Savings",
+                                    initialBalance = 0.0
+                                )
+                                scope.launch {
+                                    Toast.makeText(context, "Customer added successfully", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(context, "Please enter a valid email (must contain '@' and end with '.com')", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
+                        Text("Add Customer")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(onClick = {
+                        showRemoveDialog = true
+                    }) {
+                        Text("Remove Customer")
+                    }
                 }
             }
+        }
+
+        // Dialog for adding money
+        if (showAddMoneyDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddMoneyDialog = false },
+                title = { Text("Add Money") },
+                text = {
+                    OutlinedTextField(
+                        value = addAmount,
+                        onValueChange = { addAmount = it },
+                        label = { Text("Amount") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        if (addAmount.isNotBlank()) {
+                            val amount = addAmount.toDoubleOrNull()
+                            if (amount != null && amount > 0) {
+                                bankViewModel.addMoney(email, amount)
+                                scope.launch {
+                                    Toast.makeText(context, "Money added successfully", Toast.LENGTH_SHORT).show()
+                                }
+                                addAmount = ""
+                                showAddMoneyDialog = false
+                            } else {
+                                Toast.makeText(context, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Please enter an amount", Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
+                        Text("Add")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showAddMoneyDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        // Dialog for withdrawing money
+        if (showWithdrawMoneyDialog) {
+            AlertDialog(
+                onDismissRequest = { showWithdrawMoneyDialog = false },
+                title = { Text("Withdraw Money") },
+                text = {
+                    OutlinedTextField(
+                        value = withdrawAmount,
+                        onValueChange = { withdrawAmount = it },
+                        label = { Text("Amount") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        if (withdrawAmount.isNotBlank()) {
+                            val amount = withdrawAmount.toDoubleOrNull()
+                            if (amount != null && amount > 0) {
+                                bankViewModel.withdrawMoney(email, amount)
+                                scope.launch {
+                                    Toast.makeText(context, "Money withdrawn successfully", Toast.LENGTH_SHORT).show()
+                                }
+                                withdrawAmount = ""
+                                showWithdrawMoneyDialog = false
+                            } else {
+                                Toast.makeText(context, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Please enter an amount", Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
+                        Text("Withdraw")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showWithdrawMoneyDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
 
         // Dialog for removing a customer
@@ -196,17 +299,19 @@ fun AccountsScreen(
                         if (removeName.isNotBlank() && removeEmail.isNotBlank()) {
                             val customerToRemove = customers[removeEmail]
                             if (customerToRemove != null && customerToRemove.name == removeName) {
-                                bankViewModel.removeCustomer(removeName, removeEmail)
+                                bankViewModel.removeCustomer(name = String.toString(),email)
                                 scope.launch {
                                     Toast.makeText(context, "Customer removed successfully", Toast.LENGTH_SHORT).show()
                                 }
+                                removeName = ""
+                                removeEmail = ""
                                 removeError = ""
                                 showRemoveDialog = false
                             } else {
-                                removeError = "No customer found with provided details"
+                                removeError = "Customer not found or name does not match."
                             }
                         } else {
-                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                            removeError = "Please fill in all fields."
                         }
                     }) {
                         Text("Remove")
