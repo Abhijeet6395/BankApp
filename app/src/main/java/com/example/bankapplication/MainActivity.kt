@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -30,15 +29,21 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("bankerDetails") {
-                        BankerDetailsScreen(navController = navController, bankViewModel = bankViewModel)
+                        BankerDetailsScreen(
+                            navController = navController,
+                            bankViewModel = bankViewModel
+                        )
                     }
                     composable("customerDetails") {
-                        CustomerDetailsScreen(navController = navController, bankViewModel = bankViewModel)
+                        CustomerDetailsScreen(
+                            navController = navController,
+                            bankViewModel = bankViewModel
+                        )
                     }
                     composable("accounts/{userType}") { backStackEntry ->
                         AccountsScreen(
                             navController = navController,
-                          bankViewModel = bankViewModel,
+                            bankViewModel = bankViewModel,
                             userType = backStackEntry.arguments?.getString("userType") ?: ""
                         )
                     }
@@ -47,7 +52,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             bankViewModel = bankViewModel,
                             userType = backStackEntry.arguments?.getString("userType") ?: "",
-                            currentUserEmail = toString()
+                            currentUserEmail = backStackEntry.arguments?.getString("currentUserEmail") ?: ""
                         )
                     }
                 }

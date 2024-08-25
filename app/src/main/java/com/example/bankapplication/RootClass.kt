@@ -92,7 +92,14 @@ class BankManager(
         }
 
     }
-    fun updateDetails(newName: String?, newPin: String?, newAccountNumber: String?, newBranch: String?, newRole: String?) {
+
+    fun updateDetails(
+        newName: String?,
+        newPin: String?,
+        newAccountNumber: String?,
+        newBranch: String?,
+        newRole: String?
+    ) {
         newName?.let { name = it }
         newPin?.let { pin = it }
         newAccountNumber?.let { accountNumber = it }

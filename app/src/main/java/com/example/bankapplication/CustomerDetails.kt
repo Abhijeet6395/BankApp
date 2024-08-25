@@ -3,6 +3,7 @@ package com.example.bankapplication
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,7 +22,10 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerDetailsScreen(navController: NavController, bankViewModel: BankViewModel = viewModel()) {
+fun CustomerDetailsScreen(
+    navController: NavController,
+    bankViewModel: BankViewModel = viewModel()
+) {
     val customers by bankViewModel.customers.collectAsState(emptyMap())
     val customerEmail = customers.keys.firstOrNull()
     val customer by remember(customerEmail) { derivedStateOf { customerEmail?.let { customers[it] } } }
@@ -30,12 +34,19 @@ fun CustomerDetailsScreen(navController: NavController, bankViewModel: BankViewM
         topBar = {
             TopAppBar(
                 title = { Text("Customer Details") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate("login") {
+                            popUpTo("login") {
+                                inclusive = true
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Clear, contentDescription = "Logout")
                     }
-                }
-            )
+                },
+
+                )
         },
         bottomBar = {
             BottomNavigationBar(navController = navController, userType = "customer")

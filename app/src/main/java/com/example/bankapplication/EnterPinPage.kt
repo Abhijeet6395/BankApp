@@ -17,7 +17,11 @@ import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun EnterPinPage(navController: NavController, userType: String, bankViewModel: BankViewModel = viewModel()) {
+fun EnterPinPage(
+    navController: NavController,
+    userType: String,
+    bankViewModel: BankViewModel = viewModel()
+) {
     var email by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }

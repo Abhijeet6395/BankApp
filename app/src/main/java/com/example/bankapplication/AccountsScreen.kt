@@ -151,13 +151,22 @@ fun AccountsScreen(
                                     initialBalance = 0.0
                                 )
                                 scope.launch {
-                                    Toast.makeText(context, "Customer added successfully", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Customer added successfully",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             } else {
-                                Toast.makeText(context, "Please enter a valid email (must contain '@' and end with '.com')", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Please enter a valid email (must contain '@' and end with '.com')",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } else {
-                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }) {
                         Text("Add Customer")
@@ -219,23 +228,40 @@ fun AccountsScreen(
                                     if (bankViewModel.signIn(email, pin, "customer")) {
                                         bankViewModel.addMoney(email, amount)
                                         scope.launch {
-                                            Toast.makeText(context, "Money added successfully", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Money added successfully",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                         addAmount = ""
                                         email = ""
                                         pin = ""
                                         showAddMoneyDialog = false
                                     } else {
-                                        Toast.makeText(context, "Credential is wrong", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Credential is wrong",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 } else {
-                                    Toast.makeText(context, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Please enter a valid amount",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             } else {
-                                Toast.makeText(context, "Please enter a valid email", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Please enter a valid email",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } else {
-                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }) {
                         Text("Add")
@@ -296,26 +322,47 @@ fun AccountsScreen(
                                         if (customer != null && customer.account.balance >= amount) {
                                             bankViewModel.withdrawMoney(email, amount)
                                             scope.launch {
-                                                Toast.makeText(context, "Money withdrawn successfully", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Money withdrawn successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                             withdrawAmount = ""
                                             email = ""
                                             pin = ""
                                             showWithdrawMoneyDialog = false
                                         } else {
-                                            Toast.makeText(context, "Insufficient balance", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Insufficient balance",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                     } else {
-                                        Toast.makeText(context, "Credential is wrong", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Credential is wrong",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 } else {
-                                    Toast.makeText(context, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Please enter a valid amount",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             } else {
-                                Toast.makeText(context, "Please enter a valid email", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Please enter a valid email",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } else {
-                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }) {
                         Text("Withdraw")
@@ -357,7 +404,11 @@ fun AccountsScreen(
                                 if (customer != null) {
                                     bankViewModel.removeCustomer(customer.name, removeEmail)
                                     scope.launch {
-                                        Toast.makeText(context, "Customer removed successfully", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Customer removed successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                     removeEmail = ""
                                     showRemoveDialog = false

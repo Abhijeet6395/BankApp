@@ -3,6 +3,7 @@ package com.example.bankapplication
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -22,11 +23,17 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
         topBar = {
             TopAppBar(
                 title = { Text("Bank Manager") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate("login") {
+                            popUpTo("login") {
+                                inclusive = true
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Clear, contentDescription = "Logout")
                     }
-                }
+                },
             )
         },
         bottomBar = {
