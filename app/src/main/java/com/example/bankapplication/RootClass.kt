@@ -1,5 +1,9 @@
 package com.example.bankapplication
 
+import android.content.ContentValues.TAG
+import android.util.Log
+import kotlin.math.log
+
 open class Person(var name: String, var email: String, var pin: String) {
 
 
@@ -36,6 +40,15 @@ class Customer(
                 "9101",
                 Account("112233", "savings", 1500.0)
             )
+            logCustomerMap()
+        }
+
+
+        fun logCustomerMap() {
+            Log.d(TAG, "Current Customer Map:")
+            customerMap.forEach { (email, customer) ->
+                Log.d(TAG, "Email: $email, Name: ${customer.name}, PIN: ${customer.pin}, Account Number: ${customer.account.accountNumber}, Balance: ${customer.account.balance}")
+            }
         }
     }
 }
@@ -74,36 +87,8 @@ class BankManager(
             )
         }
 
-        fun addBankManager(
-            name: String,
-            email: String,
-            pin: String,
-            accountNumber: String,
-            branch: String,
-            role: String
-        ) {
-            val newManager = BankManager(name, email, pin, accountNumber, branch, role)
-            bankerMap[email] = newManager
-        }
 
-        // Function to remove a BankManager from the map
-        fun removeBankManager(email: String) {
-            bankerMap.remove(email)
-        }
 
-    }
 
-    fun updateDetails(
-        newName: String?,
-        newPin: String?,
-        newAccountNumber: String?,
-        newBranch: String?,
-        newRole: String?
-    ) {
-        newName?.let { name = it }
-        newPin?.let { pin = it }
-        newAccountNumber?.let { accountNumber = it }
-        newBranch?.let { branch = it }
-        newRole?.let { role = it }
     }
 }

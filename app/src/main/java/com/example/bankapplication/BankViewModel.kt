@@ -1,6 +1,11 @@
 package com.example.bankapplication
 
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.bankapplication.Customer.Companion.customerMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -25,29 +30,15 @@ class BankViewModel : ViewModel() {
         )
     }
 
-    fun editBankManager(
-        email: String,
-        newName: String? = null,
-        newPin: Int? = null,
-        newAccountNumber: String? = null,
-        newBranch: String? = null,
-        newRole: String? = null
-    ) {
-        _bankManagers.update { bankerMap ->
-            val mutableMap = bankerMap.toMutableMap()
-            mutableMap[email]?.let { manager ->
-                mutableMap[email] = BankManager(
-                    name = newName ?: manager.name,
-                    email = manager.email,
-                    pin = newPin?.toString() ?: manager.pin,
-                    accountNumber = newAccountNumber ?: manager.accountNumber,
-                    branch = newBranch ?: manager.branch,
-                    role = newRole ?: manager.role,
-                    accounts = manager.accounts
-                )
-            }
-            mutableMap
-        }
+    private val _logout = MutableLiveData<Boolean>()
+    val logout: LiveData<Boolean> = _logout
+
+    fun logout() {
+        _logout.value = true
+    }
+
+    fun onLogoutComplete() {
+        _logout.value = false
     }
 
     fun addBankManager(
@@ -98,20 +89,16 @@ class BankViewModel : ViewModel() {
         }
     }
 
-    fun editCustomerPin(email: String, newPin: Int) {
-        _customers.update { customerMap ->
-            val mutableMap = customerMap.toMutableMap()
-            mutableMap[email]?.let { customer ->
-                mutableMap[email] =
-                    Customer(customer.name, customer.email, newPin.toString(), customer.account)
-            }
-            mutableMap
-        }
-    }
 
     fun signIn(email: String, pin: String, userType: String): Boolean {
         return when (userType) {
             "customer" -> {
+                customerMap.forEach { (email, customer) ->
+                    Log.d(
+                        TAG,
+                        "Email: $email, Name: ${customer.name}, Account Number: ${customer.account.accountNumber}, Balance: ${customer.account.balance}"
+                    )
+                }
                 _customers.value[email]?.let {
                     it.pin == pin
                 } ?: false
@@ -134,18 +121,22 @@ class BankViewModel : ViewModel() {
         accountType: String,
         initialBalance: Double
     ) {
+        // Create a new Customer object
         val newCustomer = Customer(
-            name,
-            email,
-            pin,
-            Account(UUID.randomUUID().toString(), accountType, initialBalance)
+            name = name,
+            email = email,
+            pin = pin,
+            account = Account(
+                accountNumber = UUID.randomUUID().toString(),
+                accountType = accountType,
+                balance = initialBalance
+            )
         )
-        _customers.update { currentMap ->
-            currentMap.toMutableMap().apply {
-                this[email] = newCustomer
-            }
-        }
+        customerMap[email] = newCustomer
+
+        _customers.value = customerMap
     }
+
 
     fun removeCustomer(name: String, email: String) {
         _customers.update { currentMap ->

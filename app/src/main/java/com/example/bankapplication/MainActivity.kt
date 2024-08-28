@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.bankapplication.ui.theme.BankApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -37,7 +39,8 @@ class MainActivity : ComponentActivity() {
                     composable("customerDetails") {
                         CustomerDetailsScreen(
                             navController = navController,
-                            bankViewModel = bankViewModel
+                            bankViewModel = bankViewModel,
+                            email = String.toString()
                         )
                     }
                     composable("accounts/{userType}") { backStackEntry ->
@@ -56,7 +59,26 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+
+                // Logout handling
+                bankViewModel.logout.observe(this) {
+                    if (it) {
+                        performLogout(navController)
+                        bankViewModel.onLogoutComplete()
+                    }
+                }
             }
         }
+    }
+
+
+}
+ fun performLogout(navController: NavController) {
+    navController.navigate("login") {
+        popUpTo("login") {
+            inclusive = true
+        }
+        launchSingleTop=true
+        restoreState=false
     }
 }
