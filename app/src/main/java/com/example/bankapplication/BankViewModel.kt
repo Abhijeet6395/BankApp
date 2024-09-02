@@ -2,6 +2,7 @@ package com.example.bankapplication
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,7 +20,8 @@ class BankViewModel : ViewModel() {
     private val _bankManagers = MutableStateFlow(BankManager.bankerMap)
     val bankManagers: StateFlow<Map<String, BankManager>> = _bankManagers
 
-
+    var email = mutableStateOf("")
+        private set
 
     init {
         addBankManager(
@@ -38,6 +40,7 @@ class BankViewModel : ViewModel() {
 
     fun onLogoutComplete() {
         _logout.value = false
+        email.value=""
     }
 
     fun addBankManager(
@@ -89,24 +92,18 @@ class BankViewModel : ViewModel() {
     }
 
 
-    fun signIn(email: String, pin: String, userType: String): Boolean {
-        return when (userType) {
-            "customer" -> {
-
-                _customers.value[email]?.let {
-                    it.pin == pin
-                } ?: false
-            }
-
-            "banker" -> {
-                _bankManagers.value[email]?.let {
-                    it.pin == pin
-                } ?: false
-            }
-
+    fun signIn(inputEmail: String, pin: String, userType: String): Boolean {
+        val isValidUser = when (userType) {
+            "customer" -> _customers.value[inputEmail]?.let { it.pin == pin } ?: false
+            "banker" -> _bankManagers.value[inputEmail]?.let { it.pin == pin } ?: false
             else -> false
         }
 
+        if (isValidUser) {
+            email.value = inputEmail
+        }
+
+        return isValidUser
     }
 
     fun addCustomer(

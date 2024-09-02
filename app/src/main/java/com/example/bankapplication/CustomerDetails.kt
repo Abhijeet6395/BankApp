@@ -18,9 +18,8 @@ fun CustomerDetailsScreen(
     bankViewModel: BankViewModel,
     email: String
 ) {
-    // Collect the customers state from BankViewModel
-    val customers by bankViewModel.customers.collectAsState()
 
+    val customers by bankViewModel.customers.collectAsState()
     val customer = customers[email]
 
     Scaffold(
@@ -41,7 +40,7 @@ fun CustomerDetailsScreen(
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = "customer",email)
+            BottomNavigationBar(navController = navController, userType = "customer",email=BankViewModel())
         }
     ) { innerPadding ->
         Column(
@@ -69,7 +68,7 @@ fun CustomerDetailsScreen(
 
                 "customerAccounts" -> {
                     // Manage Accounts Section
-                    ManageAccountsSection(bankViewModel = bankViewModel, email = email)
+                    ManageAccountsSection(bankViewModel = bankViewModel, email = BankViewModel())
                 }
 
                 "settings" -> {
@@ -78,7 +77,7 @@ fun CustomerDetailsScreen(
                         navController = navController,
                         bankViewModel = bankViewModel,
                         userType = "customer",
-                        email = email
+                        email = BankViewModel()
                     )
                 }
             }

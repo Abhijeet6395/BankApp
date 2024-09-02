@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 
 @Composable
-fun BottomNavigationBar(navController: NavController, userType: String, email: String) {
+fun BottomNavigationBar(navController: NavController, userType: String, email: BankViewModel) {
     BottomAppBar(
         containerColor = Color(0xFF6200EA),
         contentColor = Color.White

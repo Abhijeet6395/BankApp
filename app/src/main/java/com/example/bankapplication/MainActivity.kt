@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             bankViewModel = bankViewModel,
                             userType = backStackEntry.arguments?.getString("userType") ?: "",
-                           email = backStackEntry.arguments?.getString("email") ?: ""
+                           email = BankViewModel()
                         )
                     }
                 }

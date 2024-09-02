@@ -38,7 +38,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = "banker",email)
+            BottomNavigationBar(navController = navController, userType = "banker",email= BankViewModel())
         }
     ) { innerPadding ->
         Column(
@@ -62,7 +62,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
 
                 // Account Screen Content (Add/Remove Users)
                 if (navController.currentBackStackEntry?.destination?.route == "bankerAccounts") {
-                    ManageAccountsSection(bankViewModel = bankViewModel,email=email)
+                    ManageAccountsSection(bankViewModel = bankViewModel,email=BankViewModel())
                 }
 
                 // Settings Screen Content (Change PIN)
@@ -71,7 +71,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                         navController = navController,
                         bankViewModel = bankViewModel,
                         userType = "banker",
-                        email = email
+                        email = BankViewModel()
                     )
                 }
             }
@@ -93,7 +93,7 @@ fun BankManagerDetails(manager: BankManager) {
 }
 
 @Composable
-fun ManageAccountsSection(bankViewModel: BankViewModel,email: String) {
+fun ManageAccountsSection(bankViewModel: BankViewModel,email: BankViewModel) {
     var newName by remember { mutableStateOf("") }
     var newEmail by remember { mutableStateOf("") }
     var newPin by remember { mutableStateOf("") }
