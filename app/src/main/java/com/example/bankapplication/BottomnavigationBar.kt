@@ -1,5 +1,6 @@
 package com.example.bankapplication
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
@@ -11,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 
 @Composable
-fun BottomNavigationBar(navController: NavController, userType: String) {
+fun BottomNavigationBar(navController: NavController, userType: String, email: String) {
     BottomAppBar(
         containerColor = Color(0xFF6200EA),
         contentColor = Color.White
@@ -19,11 +20,20 @@ fun BottomNavigationBar(navController: NavController, userType: String) {
         // Home Button
         IconButton(
             onClick = {
+
                 val destination = when (userType) {
-                    "banker" -> "bankerDetails"
-                    else -> "customerDetails"
+                    "banker" -> "bankerDetails/$email"
+                    else -> "customerDetails/$email"
                 }
-                navController.navigate(destination)
+                Log.d("Navigation", "Navigating to: $destination")
+                navController.navigate(destination) {
+
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                }
             },
             modifier = Modifier.weight(1f)
         ) {
@@ -33,8 +43,14 @@ fun BottomNavigationBar(navController: NavController, userType: String) {
         // Accounts Button
         IconButton(
             onClick = {
-                navController.navigate("accounts/$userType")
-
+                navController.navigate("accounts/$userType") {
+                    Log.d("Navigation","NavigatingTo:$email")
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                }
             },
             modifier = Modifier.weight(1f)
         ) {
@@ -44,7 +60,13 @@ fun BottomNavigationBar(navController: NavController, userType: String) {
         // Settings Button
         IconButton(
             onClick = {
-                navController.navigate("settings/$userType")
+                navController.navigate("settings/$userType?email=$email") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                }
             },
             modifier = Modifier.weight(1f)
         ) {

@@ -13,11 +13,13 @@ import java.util.UUID
 
 class BankViewModel : ViewModel() {
 
-    private val _customers = MutableStateFlow(Customer.customerMap)
+    private val _customers = MutableStateFlow(customerMap)
     val customers: StateFlow<Map<String, Customer>> = _customers
 
     private val _bankManagers = MutableStateFlow(BankManager.bankerMap)
     val bankManagers: StateFlow<Map<String, BankManager>> = _bankManagers
+
+
 
     init {
         addBankManager(
@@ -33,9 +35,6 @@ class BankViewModel : ViewModel() {
     private val _logout = MutableLiveData<Boolean>()
     val logout: LiveData<Boolean> = _logout
 
-    fun logout() {
-        _logout.value = true
-    }
 
     fun onLogoutComplete() {
         _logout.value = false
@@ -93,12 +92,7 @@ class BankViewModel : ViewModel() {
     fun signIn(email: String, pin: String, userType: String): Boolean {
         return when (userType) {
             "customer" -> {
-                customerMap.forEach { (email, customer) ->
-                    Log.d(
-                        TAG,
-                        "Email: $email, Name: ${customer.name}, Account Number: ${customer.account.accountNumber}, Balance: ${customer.account.balance}"
-                    )
-                }
+
                 _customers.value[email]?.let {
                     it.pin == pin
                 } ?: false
@@ -112,6 +106,7 @@ class BankViewModel : ViewModel() {
 
             else -> false
         }
+
     }
 
     fun addCustomer(
@@ -136,7 +131,6 @@ class BankViewModel : ViewModel() {
 
         _customers.value = customerMap
     }
-
 
     fun removeCustomer(name: String, email: String) {
         _customers.update { currentMap ->
@@ -187,4 +181,5 @@ class BankViewModel : ViewModel() {
 
         return pinChanged
     }
+
 }

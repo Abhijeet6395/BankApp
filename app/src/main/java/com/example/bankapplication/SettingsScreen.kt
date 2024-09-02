@@ -17,7 +17,7 @@ fun SettingsScreen(
     navController: NavController,
     bankViewModel: BankViewModel,
     userType: String,
-    currentUserEmail: String // Pass the current user's email for navigation purposes
+    email: String
 ) {
     var email by remember { mutableStateOf("") }
     var currentPin by remember { mutableStateOf("") }
@@ -36,7 +36,7 @@ fun SettingsScreen(
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = userType)
+            BottomNavigationBar(navController = navController, userType = userType,email)
         }
     ) { paddingValues ->
         Column(

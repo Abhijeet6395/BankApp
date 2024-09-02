@@ -30,7 +30,7 @@ class Customer(
             )
             customerMap["Hello@example.com"] = Customer(
                 "Hello",
-                "jane.smith@example.com",
+                "Hello@example.com",
                 "5678",
                 Account("654321", "current", 2000.0)
             )
@@ -40,16 +40,9 @@ class Customer(
                 "9101",
                 Account("112233", "savings", 1500.0)
             )
-            logCustomerMap()
+
         }
 
-
-        fun logCustomerMap() {
-            Log.d(TAG, "Current Customer Map:")
-            customerMap.forEach { (email, customer) ->
-                Log.d(TAG, "Email: $email, Name: ${customer.name}, PIN: ${customer.pin}, Account Number: ${customer.account.accountNumber}, Balance: ${customer.account.balance}")
-            }
-        }
     }
 }
 

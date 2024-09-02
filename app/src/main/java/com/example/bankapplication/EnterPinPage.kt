@@ -94,8 +94,9 @@ fun EnterPinPage(
             val result = bankViewModel.signIn(email, pin, userType)
             if (result) {
                 val destination = if (userType == "banker") "bankerDetails" else "customerDetails"
-                navController.navigate("$destination?$email") {
-                    popUpTo("login") { inclusive = true }
+                navController.navigate("$destination/$email") {
+                    popUpTo("login")
+                    { inclusive = true }
                 }
             } else {
                 showError = true
@@ -105,4 +106,3 @@ fun EnterPinPage(
         }
     }
 }
-

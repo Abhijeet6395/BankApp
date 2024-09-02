@@ -14,10 +14,11 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel = viewModel()) {
+fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel,email:String) {
     val bankManagers by bankViewModel.bankManagers.collectAsState(emptyMap())
     val managerEmail = bankManagers.keys.firstOrNull()
     val banker by remember(managerEmail) { derivedStateOf { managerEmail?.let { bankManagers[it] } } }
+
 
     Scaffold(
         topBar = {
@@ -37,7 +38,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = "banker")
+            BottomNavigationBar(navController = navController, userType = "banker",email)
         }
     ) { innerPadding ->
         Column(
@@ -47,7 +48,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                 .padding(16.dp)
         ) {
             banker?.let {
-                if (navController.currentBackStackEntry?.destination?.route == "bankerDetails") {
+                if (navController.currentBackStackEntry?.destination?.route == "bankerDetails/{email}") {
                     Text(
                         text = "Bank Manager Details",
                         style = MaterialTheme.typography.headlineLarge
@@ -61,7 +62,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
 
                 // Account Screen Content (Add/Remove Users)
                 if (navController.currentBackStackEntry?.destination?.route == "bankerAccounts") {
-                    ManageAccountsSection(bankViewModel = bankViewModel)
+                    ManageAccountsSection(bankViewModel = bankViewModel,email=email)
                 }
 
                 // Settings Screen Content (Change PIN)
@@ -70,7 +71,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                         navController = navController,
                         bankViewModel = bankViewModel,
                         userType = "banker",
-                        currentUserEmail = String()
+                        email = email
                     )
                 }
             }
@@ -92,7 +93,7 @@ fun BankManagerDetails(manager: BankManager) {
 }
 
 @Composable
-fun ManageAccountsSection(bankViewModel: BankViewModel) {
+fun ManageAccountsSection(bankViewModel: BankViewModel,email: String) {
     var newName by remember { mutableStateOf("") }
     var newEmail by remember { mutableStateOf("") }
     var newPin by remember { mutableStateOf("") }

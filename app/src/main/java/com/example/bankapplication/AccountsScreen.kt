@@ -1,3 +1,4 @@
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,7 +26,8 @@ import kotlinx.coroutines.launch
 fun AccountsScreen(
     navController: NavController,
     bankViewModel: BankViewModel,
-    userType: String
+    userType: String,
+    email: String
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -35,8 +37,8 @@ fun AccountsScreen(
     var showWithdrawMoneyDialog by remember { mutableStateOf(false) }
     var addAmount by remember { mutableStateOf("") }
     var withdrawAmount by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var pin by remember { mutableStateOf("") }
+    var dialogEmail by remember { mutableStateOf("") }
+    var dialogPin by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var showRemoveDialog by remember { mutableStateOf(false) }
     var removeEmail by remember { mutableStateOf("") }
@@ -58,7 +60,7 @@ fun AccountsScreen(
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = userType)
+            BottomNavigationBar(navController = navController, userType = userType,email=email)
         }
     ) { paddingValues ->
         Column(
@@ -121,8 +123,8 @@ fun AccountsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = dialogEmail,
+                    onValueChange = { dialogEmail = it },
                     label = { Text("Email ID") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -130,8 +132,8 @@ fun AccountsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = pin,
-                    onValueChange = { pin = it },
+                    value = dialogPin,
+                    onValueChange = { dialogPin = it },
                     label = { Text("PIN") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
                     modifier = Modifier.fillMaxWidth()
@@ -141,12 +143,12 @@ fun AccountsScreen(
 
                 Row {
                     Button(onClick = {
-                        if (email.isNotBlank() && name.isNotBlank() && pin.isNotBlank()) {
+                        if (email.isNotBlank() && name.isNotBlank() && dialogPin.isNotBlank()) {
                             if (isValidEmail(email)) {
                                 bankViewModel.addCustomer(
                                     name = name,
                                     email = email,
-                                    pin = pin,
+                                    pin = dialogPin,
                                     accountType = "Savings",
                                     initialBalance = 0.0
                                 )
@@ -192,7 +194,7 @@ fun AccountsScreen(
                     Column {
                         OutlinedTextField(
                             value = email,
-                            onValueChange = { email = it },
+                            onValueChange = {dialogEmail = it },
                             label = { Text("Email") },
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
                             modifier = Modifier.fillMaxWidth()
@@ -211,8 +213,8 @@ fun AccountsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         OutlinedTextField(
-                            value = pin,
-                            onValueChange = { pin = it },
+                            value =dialogPin,
+                            onValueChange = { dialogPin = it },
                             label = { Text("PIN") },
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
                             modifier = Modifier.fillMaxWidth()
@@ -221,12 +223,13 @@ fun AccountsScreen(
                 },
                 confirmButton = {
                     Button(onClick = {
-                        if (email.isNotBlank() && addAmount.isNotBlank() && pin.isNotBlank()) {
+                        if (email.isNotBlank() && addAmount.isNotBlank() && dialogPin.isNotBlank()) {
                             val amount = addAmount.toDoubleOrNull()
                             if (isValidEmail(email)) {
                                 if (amount != null && amount > 0) {
-                                    if (bankViewModel.signIn(email, pin, "customer")) {
-                                        bankViewModel.addMoney(email, amount)
+                                    if (bankViewModel.signIn(email, dialogPin, "customer")) {
+                                        bankViewModel.addMoney(email=email, amount)
+
                                         scope.launch {
                                             Toast.makeText(
                                                 context,
@@ -235,8 +238,8 @@ fun AccountsScreen(
                                             ).show()
                                         }
                                         addAmount = ""
-                                        email = ""
-                                        pin = ""
+                                        dialogEmail = ""
+                                        dialogPin = ""
                                         showAddMoneyDialog = false
                                     } else {
                                         Toast.makeText(
@@ -284,7 +287,7 @@ fun AccountsScreen(
                     Column {
                         OutlinedTextField(
                             value = email,
-                            onValueChange = { email = it },
+                            onValueChange = { dialogEmail = it },
                             label = { Text("Email") },
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
                             modifier = Modifier.fillMaxWidth()
@@ -303,8 +306,8 @@ fun AccountsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         OutlinedTextField(
-                            value = pin,
-                            onValueChange = { pin = it },
+                            value = dialogPin,
+                            onValueChange = { dialogPin = it },
                             label = { Text("PIN") },
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
                             modifier = Modifier.fillMaxWidth()
@@ -313,11 +316,11 @@ fun AccountsScreen(
                 },
                 confirmButton = {
                     Button(onClick = {
-                        if (email.isNotBlank() && withdrawAmount.isNotBlank() && pin.isNotBlank()) {
+                        if (email.isNotBlank() && withdrawAmount.isNotBlank() && dialogPin.isNotBlank()) {
                             val amount = withdrawAmount.toDoubleOrNull()
                             if (isValidEmail(email)) {
                                 if (amount != null && amount > 0) {
-                                    if (bankViewModel.signIn(email, pin, "customer")) {
+                                    if (bankViewModel.signIn(email, dialogPin, "customer")) {
                                         val customer = bankViewModel.customers.value[email]
                                         if (customer != null && customer.account.balance >= amount) {
                                             bankViewModel.withdrawMoney(email, amount)
@@ -329,8 +332,8 @@ fun AccountsScreen(
                                                 ).show()
                                             }
                                             withdrawAmount = ""
-                                            email = ""
-                                            pin = ""
+                                           dialogEmail= ""
+                                            dialogPin = ""
                                             showWithdrawMoneyDialog = false
                                         } else {
                                             Toast.makeText(

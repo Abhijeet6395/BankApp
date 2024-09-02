@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.bankapplication.ui.theme.BankApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,24 +29,28 @@ class MainActivity : ComponentActivity() {
                             userType = backStackEntry.arguments?.getString("userType") ?: ""
                         )
                     }
-                    composable("bankerDetails") {
+                    composable("bankerDetails/{email}") {backStackEntry->
                         BankerDetailsScreen(
                             navController = navController,
-                            bankViewModel = bankViewModel
+                            bankViewModel = bankViewModel,
+                            email = backStackEntry.arguments?.getString("email") ?: ""
                         )
                     }
-                    composable("customerDetails") {
+                    composable("customerDetails/{email}") {backStackEntry->
+
                         CustomerDetailsScreen(
                             navController = navController,
                             bankViewModel = bankViewModel,
-                            email = String.toString()
+                            email = backStackEntry.arguments?.getString("email") ?: ""
+
                         )
                     }
                     composable("accounts/{userType}") { backStackEntry ->
                         AccountsScreen(
                             navController = navController,
                             bankViewModel = bankViewModel,
-                            userType = backStackEntry.arguments?.getString("userType") ?: ""
+                            userType = backStackEntry.arguments?.getString("userType") ?: "",
+                            email = backStackEntry.arguments?.getString("email") ?: ""
                         )
                     }
                     composable("settings/{userType}") { backStackEntry ->
@@ -55,7 +58,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             bankViewModel = bankViewModel,
                             userType = backStackEntry.arguments?.getString("userType") ?: "",
-                            currentUserEmail = backStackEntry.arguments?.getString("currentUserEmail") ?: ""
+                           email = backStackEntry.arguments?.getString("email") ?: ""
                         )
                     }
                 }
@@ -73,12 +76,13 @@ class MainActivity : ComponentActivity() {
 
 
 }
- fun performLogout(navController: NavController) {
+
+fun performLogout(navController: NavController) {
     navController.navigate("login") {
         popUpTo("login") {
             inclusive = true
         }
-        launchSingleTop=true
-        restoreState=false
+        launchSingleTop = true
+        restoreState = false
     }
 }
