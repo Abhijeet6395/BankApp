@@ -18,11 +18,15 @@ fun CustomerDetailsScreen(
     navController: NavController,
     bankViewModel: BankViewModel,
 
-) {
+    ) {
 
 
     LaunchedEffect(Unit) {
-        bankViewModel.setCurrentCustomerEmail(navController.currentBackStackEntry?.arguments?.getString("email") ?: "")
+        bankViewModel.setCurrentCustomerEmail(
+            navController.currentBackStackEntry?.arguments?.getString(
+                "email"
+            ) ?: ""
+        )
     }
 
     val customers by bankViewModel.customers.collectAsState()
@@ -38,9 +42,11 @@ fun CustomerDetailsScreen(
                 actions = {
                     IconButton(onClick = {
                         navController.navigate("login") {
-                            popUpTo("login") {
+                            popUpTo(0) {
                                 inclusive = true
                             }
+                            launchSingleTop = true
+                            restoreState = false
                         }
                     }) {
                         Icon(Icons.Filled.Clear, contentDescription = "Logout")
@@ -50,7 +56,11 @@ fun CustomerDetailsScreen(
         },
         bottomBar = {
 
-            BottomNavigationBar(navController = navController, userType = "customer", bankViewModel = bankViewModel)
+            BottomNavigationBar(
+                navController = navController,
+                userType = "customer",
+                bankViewModel = bankViewModel
+            )
         }
     ) { innerPadding ->
         Column(

@@ -62,13 +62,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Logout handling
-                bankViewModel.logout.observe(this) {
-                    if (it) {
-                        performLogout(navController)
-                        bankViewModel.onLogoutComplete()
-                    }
-                }
+
             }
         }
     }
@@ -76,12 +70,3 @@ class MainActivity : ComponentActivity() {
 
 }
 
-fun performLogout(navController: NavController) {
-    navController.navigate("login") {
-        popUpTo("login") {
-            inclusive = true
-        }
-        launchSingleTop = true
-        restoreState = false
-    }
-}
