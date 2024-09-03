@@ -17,9 +17,10 @@ fun SettingsScreen(
     navController: NavController,
     bankViewModel: BankViewModel,
     userType: String,
-    email: BankViewModel
+
 ) {
-    var email by remember { mutableStateOf("") }
+    val email by bankViewModel.currentCustomerEmail.collectAsState()
+    var inputEmail by remember { mutableStateOf("") }
     var currentPin by remember { mutableStateOf("") }
     var newPin by remember { mutableStateOf("") }
     var pinChangeError by remember { mutableStateOf<String?>(null) }
@@ -52,8 +53,8 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = inputEmail,
+                onValueChange = { inputEmail = it },
                 label = { Text("Email ID") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth()

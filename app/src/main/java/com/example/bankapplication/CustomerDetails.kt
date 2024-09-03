@@ -96,8 +96,7 @@ fun CustomerDetailsScreen(
                     SettingsScreen(
                         navController = navController,
                         bankViewModel = bankViewModel,
-                        userType = "customer",
-                        email = bankViewModel
+                        userType = "customer"
                     )
                 }
             }

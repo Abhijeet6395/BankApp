@@ -29,9 +29,11 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                 actions = {
                     IconButton(onClick = {
                         navController.navigate("login") {
-                            popUpTo("login") {
+                            popUpTo(0) {
                                 inclusive = true
                             }
+                            launchSingleTop = true
+                            restoreState = false
                         }
                     }) {
                         Icon(Icons.Filled.Clear, contentDescription = "Logout")
@@ -73,7 +75,6 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                         navController = navController,
                         bankViewModel = bankViewModel,
                         userType = "banker",
-                        email = BankViewModel()
                     )
                 }
             }

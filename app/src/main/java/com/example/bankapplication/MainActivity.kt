@@ -48,8 +48,7 @@ class MainActivity : ComponentActivity() {
                         AccountsScreen(
                             navController = navController,
                             bankViewModel = bankViewModel,
-                            userType = backStackEntry.arguments?.getString("userType") ?: "",
-                            email = backStackEntry.arguments?.getString("email") ?: ""
+                            userType = backStackEntry.arguments?.getString("userType") ?: ""
                         )
                     }
                     composable("settings/{userType}") { backStackEntry ->
@@ -57,7 +56,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             bankViewModel = bankViewModel,
                             userType = backStackEntry.arguments?.getString("userType") ?: "",
-                           email = BankViewModel()
+
                         )
                     }
                 }
