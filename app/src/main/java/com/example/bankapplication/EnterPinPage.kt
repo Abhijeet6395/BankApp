@@ -1,5 +1,6 @@
 package com.example.bankapplication
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -93,7 +94,11 @@ fun EnterPinPage(
         Button(onClick = {
             val result = bankViewModel.signIn(email, pin, userType)
             if (result) {
-                val destination = if (userType == "banker") "bankerDetails" else "customerDetails"
+                bankViewModel.setCurrentCustomerEmail(email = email)
+
+                val destination = if (userType == "banker")
+                    "bankerDetails"
+                else "customerDetails"
                 navController.navigate("$destination/$email") {
                     popUpTo("login")
                     { inclusive = true }

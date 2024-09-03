@@ -14,11 +14,13 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel,email:String) {
+fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel) {
     val bankManagers by bankViewModel.bankManagers.collectAsState(emptyMap())
     val managerEmail = bankManagers.keys.firstOrNull()
     val banker by remember(managerEmail) { derivedStateOf { managerEmail?.let { bankManagers[it] } } }
-
+    LaunchedEffect(Unit) {
+        bankViewModel.setCurrentCustomerEmail(navController.currentBackStackEntry?.arguments?.getString("email") ?: "")
+    }
 
     Scaffold(
         topBar = {
@@ -38,7 +40,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = "banker",email= BankViewModel())
+            BottomNavigationBar(navController = navController, userType = "banker",bankViewModel=bankViewModel)
         }
     ) { innerPadding ->
         Column(

@@ -22,6 +22,12 @@ class BankViewModel : ViewModel() {
 
     var email = mutableStateOf("")
         private set
+    private val _currentCustomerEmail = MutableStateFlow("")
+    val currentCustomerEmail: StateFlow<String> = _currentCustomerEmail
+
+    fun setCurrentCustomerEmail(email: String) {
+        _currentCustomerEmail.value = email
+    }
 
     init {
         addBankManager(

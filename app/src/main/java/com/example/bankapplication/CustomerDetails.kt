@@ -1,6 +1,7 @@
 package com.example.bankapplication
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -16,11 +17,19 @@ import androidx.navigation.NavController
 fun CustomerDetailsScreen(
     navController: NavController,
     bankViewModel: BankViewModel,
-    email: String
+
 ) {
 
+
+    LaunchedEffect(Unit) {
+        bankViewModel.setCurrentCustomerEmail(navController.currentBackStackEntry?.arguments?.getString("email") ?: "")
+    }
+
     val customers by bankViewModel.customers.collectAsState()
+    val email by bankViewModel.currentCustomerEmail.collectAsState()
     val customer = customers[email]
+    Log.d("CustomerDetailsScreen", "Accessed Email: $email")
+    Log.d("CustomerDetailsScreen", "Customer Data: $customer")
 
     Scaffold(
         topBar = {
@@ -40,7 +49,8 @@ fun CustomerDetailsScreen(
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = "customer",email=BankViewModel())
+
+            BottomNavigationBar(navController = navController, userType = "customer", bankViewModel = bankViewModel)
         }
     ) { innerPadding ->
         Column(
@@ -52,7 +62,7 @@ fun CustomerDetailsScreen(
 
             when (navController.currentBackStackEntry?.destination?.route) {
                 "customerDetails/{email}" -> {
-                    // Customer Details Section
+                    Log.d("CustomerDetailsScreen", "Customer: $email")
                     customer?.let {
                         Text(
                             text = "Customer Details",
@@ -68,7 +78,7 @@ fun CustomerDetailsScreen(
 
                 "customerAccounts" -> {
                     // Manage Accounts Section
-                    ManageAccountsSection(bankViewModel = bankViewModel, email = BankViewModel())
+                    ManageAccountsSection(bankViewModel = bankViewModel, email = bankViewModel)
                 }
 
                 "settings" -> {
@@ -77,7 +87,7 @@ fun CustomerDetailsScreen(
                         navController = navController,
                         bankViewModel = bankViewModel,
                         userType = "customer",
-                        email = BankViewModel()
+                        email = bankViewModel
                     )
                 }
             }

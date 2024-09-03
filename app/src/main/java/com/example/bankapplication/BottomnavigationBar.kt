@@ -7,12 +7,19 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
+import com.google.android.material.bottomappbar.BottomAppBar
 
 @Composable
-fun BottomNavigationBar(navController: NavController, userType: String, email: BankViewModel) {
+fun BottomNavigationBar(navController: NavController, userType: String,bankViewModel: BankViewModel) {
+    val email by bankViewModel.currentCustomerEmail.collectAsState()
+
+
     BottomAppBar(
         containerColor = Color(0xFF6200EA),
         contentColor = Color.White
@@ -26,14 +33,16 @@ fun BottomNavigationBar(navController: NavController, userType: String, email: B
                     else -> "customerDetails/$email"
                 }
                 Log.d("Navigation", "Navigating to: $destination")
+
                 navController.navigate(destination) {
 
                     launchSingleTop = true
                     restoreState = true
                     popUpTo(navController.graph.startDestinationId) {
                         inclusive = false
+                        }
                     }
-                }
+
             },
             modifier = Modifier.weight(1f)
         ) {

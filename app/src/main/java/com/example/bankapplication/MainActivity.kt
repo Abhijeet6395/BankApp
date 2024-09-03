@@ -29,19 +29,18 @@ class MainActivity : ComponentActivity() {
                             userType = backStackEntry.arguments?.getString("userType") ?: ""
                         )
                     }
-                    composable("bankerDetails/{email}") {backStackEntry->
+                    composable("bankerDetails/{email}") {
                         BankerDetailsScreen(
                             navController = navController,
                             bankViewModel = bankViewModel,
-                            email = backStackEntry.arguments?.getString("email") ?: ""
+
                         )
                     }
-                    composable("customerDetails/{email}") {backStackEntry->
+                    composable("customerDetails/{email}") {
 
                         CustomerDetailsScreen(
                             navController = navController,
-                            bankViewModel = bankViewModel,
-                            email = backStackEntry.arguments?.getString("email") ?: ""
+                            bankViewModel = bankViewModel
 
                         )
                     }

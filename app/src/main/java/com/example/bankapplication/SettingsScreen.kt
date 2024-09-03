@@ -36,7 +36,7 @@ fun SettingsScreen(
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = userType,email= BankViewModel())
+            BottomNavigationBar(navController = navController, userType = userType, bankViewModel = bankViewModel)
         }
     ) { paddingValues ->
         Column(
