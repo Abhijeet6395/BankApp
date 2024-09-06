@@ -55,7 +55,8 @@ fun EnterPinPage(
                 fontSize = 18.sp,
                 color = Color.Black
             ),
-            singleLine = true
+            singleLine = true,
+            maxLines = 1
         )
 
         Spacer(modifier = Modifier.height(10.dp))

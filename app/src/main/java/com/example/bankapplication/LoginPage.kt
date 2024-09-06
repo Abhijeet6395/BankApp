@@ -20,6 +20,7 @@ fun LoginPage(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Text(
             text = "Welcome to the Bank Application",
             style = MaterialTheme.typography.headlineLarge,

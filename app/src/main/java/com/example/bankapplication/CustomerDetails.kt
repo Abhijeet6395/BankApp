@@ -21,7 +21,7 @@ fun CustomerDetailsScreen(
     ) {
 
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(key1 = bankViewModel.customers) {
         bankViewModel.setCurrentCustomerEmail(
             navController.currentBackStackEntry?.arguments?.getString(
                 "email"
@@ -32,8 +32,7 @@ fun CustomerDetailsScreen(
     val customers by bankViewModel.customers.collectAsState()
     val email by bankViewModel.currentCustomerEmail.collectAsState()
     val customer = customers[email]
-    Log.d("CustomerDetailsScreen", "Accessed Email: $email")
-    Log.d("CustomerDetailsScreen", "Customer Data: $customer")
+
 
     Scaffold(
         topBar = {

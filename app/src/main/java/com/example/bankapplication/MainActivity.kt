@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BankApplicationTheme {
                 val navController = rememberNavController()
-                val bankViewModel: BankViewModel = viewModel()
+                val bankViewModel: BankViewModel = viewModel()//issue with state(issue), calling it completely again and again.
 
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") {

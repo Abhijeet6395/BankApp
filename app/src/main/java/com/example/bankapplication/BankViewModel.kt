@@ -2,13 +2,17 @@ package com.example.bankapplication
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.bankapplication.Customer.Companion.customerMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
 
@@ -23,7 +27,11 @@ class BankViewModel : ViewModel() {
     var email = mutableStateOf("")
         private set
     private val _currentCustomerEmail = MutableStateFlow("")
+
     val currentCustomerEmail: StateFlow<String> = _currentCustomerEmail
+
+    private val _currentUser = MutableStateFlow<Any?>(null)
+    var triggerRecomposition by mutableStateOf(false)
 
     fun setCurrentCustomerEmail(email: String) {
         _currentCustomerEmail.value = email
@@ -46,7 +54,7 @@ class BankViewModel : ViewModel() {
 
     fun onLogoutComplete() {
         _logout.value = false
-        email.value=""
+        email.value = ""
     }
 
     fun addBankManager(
@@ -99,14 +107,23 @@ class BankViewModel : ViewModel() {
 
 
     fun signIn(inputEmail: String, pin: String, userType: String): Boolean {
+
         val isValidUser = when (userType) {
+
             "customer" -> _customers.value[inputEmail]?.let { it.pin == pin } ?: false
+
             "banker" -> _bankManagers.value[inputEmail]?.let { it.pin == pin } ?: false
             else -> false
         }
 
+
         if (isValidUser) {
             email.value = inputEmail
+            _currentUser.value = when (userType) {
+                "customer" -> _customers.value[inputEmail]
+                "banker" -> _bankManagers.value[inputEmail]
+                else -> null
+            }
         }
 
         return isValidUser
@@ -119,7 +136,6 @@ class BankViewModel : ViewModel() {
         accountType: String,
         initialBalance: Double
     ) {
-        // Create a new Customer object
         val newCustomer = Customer(
             name = name,
             email = email,
@@ -130,10 +146,39 @@ class BankViewModel : ViewModel() {
                 balance = initialBalance
             )
         )
-        customerMap[email] = newCustomer
 
-        _customers.value = customerMap
-    }
+
+        //new pendingCustomers Map,
+        //populate the new map from the old map using for loop
+        // pendingCustomer[email]=newCustomer
+        //_customer.value.
+
+
+//        val pendingCustomers = mutableMapOf<String, Customer>()
+//
+//        // Populate the new map from the old map using a for loop
+//        for ((key, value) in _customers.value) {
+//            pendingCustomers[key] = value
+//        }
+//
+//
+//        pendingCustomers[email] = newCustomer
+//
+//        // Update the _customers with the new pendingCustomers map
+//        _customers.value = pendingCustomers
+
+        _customers.update { currentMap ->
+            val updatedMap = currentMap.toMutableMap()
+            updatedMap[email] = newCustomer
+
+            updatedMap // Return the updatedMap for StateFlow
+        }
+
+        customerMap[email] = newCustomer
+        _customers.update { customerMap }
+        triggerRecomposition=!triggerRecomposition
+
+    }  
 
     fun removeCustomer(name: String, email: String) {
         _customers.update { currentMap ->
@@ -161,6 +206,10 @@ class BankViewModel : ViewModel() {
                         accounts = it.accounts
                     )
                     pinChanged = true
+
+                    if (_currentUser.value is BankManager && (_currentUser.value as BankManager).email == email) {
+                        _currentUser.value = mutableMap[email]
+                    }
                 }
             }
             mutableMap
@@ -177,6 +226,10 @@ class BankViewModel : ViewModel() {
                         account = it.account
                     )
                     pinChanged = true
+                    if (_currentUser.value is Customer && (_currentUser.value as Customer).email == email) {
+                        _currentUser.value = mutableMap[email]
+                    }
+
                 }
             }
             mutableMap

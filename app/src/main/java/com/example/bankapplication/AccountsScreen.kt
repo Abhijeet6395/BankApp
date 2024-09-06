@@ -89,6 +89,11 @@ fun AccountsScreen(
                         .weight(1f)
                         .fillMaxWidth()
                 ) {
+                    item {
+                        LaunchedEffect(key1 = bankViewModel.triggerRecomposition) {
+                            // This will trigger recomposition when triggerRecomposition changes
+                        }
+                    }
                     if (customers.isEmpty()) {
                         item {
                             Text(
@@ -99,7 +104,7 @@ fun AccountsScreen(
                             )
                         }
                     } else {
-                        items(customers.toList()) { (email, customer) ->
+                        items(customers.toList())  { (email, customer) ->
                             Text(
                                 text = "${customer.name} (${customer.email})",
                                 style = MaterialTheme.typography.bodyLarge,
