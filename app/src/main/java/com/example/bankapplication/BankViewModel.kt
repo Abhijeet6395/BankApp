@@ -148,25 +148,23 @@ class BankViewModel @Inject constructor(
         }
     }
 
-    fun changePin(email: String, currentPin: String, newPin: String): Boolean {
-        var pinChanged = false
-        viewModelScope.launch {
+    suspend fun changePin(email: String, currentPin: String, newPin: String): Boolean {
+        return withContext(Dispatchers.IO) {
             val customer = repository.getCustomerByEmail(email)
-            customer?.let {
-                if (it.pin == currentPin) {
-                    val updatedCustomer = Customer(
-                        email = it.email,
-                        name = it.name,
-                        pin = newPin,
-                        accountNumber = it.accountNumber,
-                        accountType = it.accountType
+            if (customer != null && customer.pin == currentPin) {
+                val updatedCustomer = customer.copy(pin = newPin)
+                repository.updateCustomer(updatedCustomer) // Persist the update in the repository
 
-                    )
-                    repository.updateCustomer(updatedCustomer)
-                    pinChanged = true
+                // Update the in-memory list of customers, iterate over it
+                _customers.value = _customers.value.map { existingCustomer ->
+                    if (existingCustomer.email == email) updatedCustomer else existingCustomer
                 }
+
+                true // PIN changed successfully
+            } else {
+                false // Current PIN incorrect
             }
         }
-        return pinChanged
     }
+
 }
