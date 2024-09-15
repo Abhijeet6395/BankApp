@@ -1,132 +1,68 @@
 package com.example.bankapplication
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.bankapplication.Customer.Companion.customerMap
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import java.util.UUID
+import androidx.lifecycle.viewModelScope
+import com.example.bankapplication.repositery.CustomerRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
+import javax.inject.Inject
 
-class BankViewModel : ViewModel() {
+@HiltViewModel
 
-    private val _customers = MutableStateFlow(customerMap)
-    val customers: StateFlow<Map<String, Customer>> = _customers
+class BankViewModel @Inject constructor(
+    private val repository: CustomerRepository
+) : ViewModel() {
 
-    private val _bankManagers = MutableStateFlow(BankManager.bankerMap)
-    val bankManagers: StateFlow<Map<String, BankManager>> = _bankManagers
+    private val _customers = MutableStateFlow<List<Customer>>(emptyList())
+    val customers: StateFlow<List<Customer>> = _customers.asStateFlow()
 
-    var email = mutableStateOf("")
-        private set
-    private val _currentCustomerEmail = MutableStateFlow("")
+    private val _bankManager = MutableStateFlow<BankManager?>(null)
+    val bankManager: StateFlow<BankManager?> = _bankManager.asStateFlow()
 
-    val currentCustomerEmail: StateFlow<String> = _currentCustomerEmail
+    private val _currentCustomerEmail = MutableStateFlow<String>("")
+    val currentCustomerEmail: StateFlow<String> = _currentCustomerEmail.asStateFlow()
 
-    private val _currentUser = MutableStateFlow<Any?>(null)
+    private val _logout = MutableStateFlow<Boolean>(false)
+    val logout: StateFlow<Boolean> = _logout.asStateFlow()
     var triggerRecomposition by mutableStateOf(false)
 
-    fun setCurrentCustomerEmail(email: String) {
-        _currentCustomerEmail.value = email
-    }
-
     init {
-        addBankManager(
-            "Admin",
-            "admin@example.com",
-            1234.toString(),
-            "000111",
-            "Main Branch",
-            "Admin"
-        )
-    }
+        viewModelScope.launch {
+            _customers.value = repository.getAllCustomers()
 
-    private val _logout = MutableLiveData<Boolean>()
-    val logout: LiveData<Boolean> = _logout
+        }
+    }
 
 
     fun onLogoutComplete() {
         _logout.value = false
-        email.value = ""
     }
 
-    fun addBankManager(
-        name: String,
-        email: String,
-        pin: String,
-        accountNumber: String,
-        branch: String,
-        role: String
-    ) {
-        val newManager = BankManager(name, email, pin, accountNumber, branch, role, emptyList())
-        _bankManagers.update { bankerMap ->
-            (bankerMap + (email to newManager)) as MutableMap<String, BankManager>
-        }
-    }
-
-    fun addMoney(email: String, amount: Double) {
-        _customers.update { customerMap ->
-            val mutableMap = customerMap.toMutableMap()
-            mutableMap[email]?.let { customer ->
-                val updatedAccount = Account(
-                    customer.account.accountNumber,
-                    customer.account.accountType,
-                    customer.account.balance + amount
-                )
-                mutableMap[email] =
-                    Customer(customer.name, customer.email, customer.pin, updatedAccount)
+    suspend fun signIn(email: String, pin: String, userType: String): Boolean {
+        return when (userType) {
+            "customer" -> {
+                val customer = repository.getCustomerByEmail(email)
+                customer != null && customer.pin == pin
             }
-            mutableMap
-        }
-    }
 
-    fun withdrawMoney(email: String, amount: Double) {
-        _customers.update { customerMap ->
-            val mutableMap = customerMap.toMutableMap()
-            mutableMap[email]?.let { customer ->
-                if (customer.account.balance >= amount) {
-                    val updatedAccount = Account(
-                        customer.account.accountNumber,
-                        customer.account.accountType,
-                        customer.account.balance - amount
-                    )
-                    mutableMap[email] =
-                        Customer(customer.name, customer.email, customer.pin, updatedAccount)
-                }
+            "banker" -> {
+                val bankManager = repository.getBankManagerByEmail(email)
+                bankManager != null && bankManager.pin == pin
             }
-            mutableMap
-        }
-    }
 
-
-    fun signIn(inputEmail: String, pin: String, userType: String): Boolean {
-
-        val isValidUser = when (userType) {
-
-            "customer" -> _customers.value[inputEmail]?.let { it.pin == pin } ?: false
-
-            "banker" -> _bankManagers.value[inputEmail]?.let { it.pin == pin } ?: false
             else -> false
         }
+    }
 
-
-        if (isValidUser) {
-            email.value = inputEmail
-            _currentUser.value = when (userType) {
-                "customer" -> _customers.value[inputEmail]
-                "banker" -> _bankManagers.value[inputEmail]
-                else -> null
-            }
-        }
-
-        return isValidUser
+    fun setCurrentCustomerEmail(email: String) {
+        _currentCustomerEmail.value = email
     }
 
     fun addCustomer(
@@ -136,106 +72,101 @@ class BankViewModel : ViewModel() {
         accountType: String,
         initialBalance: Double
     ) {
-        val newCustomer = Customer(
-            name = name,
-            email = email,
-            pin = pin,
-            account = Account(
-                accountNumber = UUID.randomUUID().toString(),
+        viewModelScope.launch {
+            val accountNumber = UUID.randomUUID().toString()
+            val newAccount = Account(
+                accountNumber = accountNumber,
                 accountType = accountType,
                 balance = initialBalance
             )
-        )
-
-
-        //new pendingCustomers Map,
-        //populate the new map from the old map using for loop
-        // pendingCustomer[email]=newCustomer
-        //_customer.value.
-
-
-//        val pendingCustomers = mutableMapOf<String, Customer>()
-//
-//        // Populate the new map from the old map using a for loop
-//        for ((key, value) in _customers.value) {
-//            pendingCustomers[key] = value
-//        }
-//
-//
-//        pendingCustomers[email] = newCustomer
-//
-//        // Update the _customers with the new pendingCustomers map
-//        _customers.value = pendingCustomers
-
-        _customers.update { currentMap ->
-            val updatedMap = currentMap.toMutableMap()
-            updatedMap[email] = newCustomer
-
-            updatedMap // Return the updatedMap for StateFlow
+            val newCustomer = Customer(
+                email = email,
+                name = name,
+                pin = pin,
+                accountNumber = accountNumber,
+                accountType = accountType
+            )
+            repository.insertAccount(newAccount)
+            repository.insertCustomer(newCustomer)
+            _customers.value = repository.getAllCustomers()
+            triggerRecomposition = !triggerRecomposition
         }
-
-        customerMap[email] = newCustomer
-        _customers.update { customerMap }
-        triggerRecomposition=!triggerRecomposition
-
-    }  
-
-    fun removeCustomer(name: String, email: String) {
-        _customers.update { currentMap ->
-            currentMap.toMutableMap().apply {
-                remove(email)
+    }
+   suspend fun getAccountByAccountNumber(accountNumber: String): Account? {
+        return repository.getAccountByAccountNumber(accountNumber)
+    }
+    suspend fun removeCustomer(email: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                repository.deleteCustomerByEmail(email) // Delete customer first
+                _customers.value = repository.getAllCustomers() // Update the customer list
+                true // Return true if successful
+            } catch (e: Exception) {
+                false
             }
         }
     }
 
 
-    fun changePin(email: String, currentPin: String, newPin: Int): Boolean {
+    fun addMoney(email: String, amount: Double) {
+        viewModelScope.launch {
+            val customer = repository.getCustomerByEmail(email)
+            customer?.let {
+                val account = repository.getAccountByAccountNumber(it.accountNumber)
+                account?.let { acc ->
+                    val updatedAccount = Account(
+                        accountNumber = acc.accountNumber,
+                        accountType = acc.accountType,
+                        balance = acc.balance + amount
+                    )
+                    repository.updateAccount(updatedAccount)
+                    _customers.value = repository.getAllCustomers()
+                    triggerRecomposition = !triggerRecomposition
+                }
+            }
+        }
+    }
+
+    fun withdrawMoney(email: String, amount: Double) {
+        viewModelScope.launch {
+            val customer = repository.getCustomerByEmail(email)
+            customer?.let {
+                val account = repository.getAccountByAccountNumber(it.accountNumber)
+                account?.let { acc ->
+                    if (acc.balance >= amount) {
+                        val updatedAccount = Account(
+                            accountNumber = acc.accountNumber,
+                            accountType = acc.accountType,
+                            balance = acc.balance - amount
+                        )
+                        repository.updateAccount(updatedAccount)
+                        _customers.value = repository.getAllCustomers()
+                        triggerRecomposition = !triggerRecomposition
+                    }
+                }
+            }
+        }
+    }
+
+    fun changePin(email: String, currentPin: String, newPin: String): Boolean {
         var pinChanged = false
-
-        _bankManagers.update { bankerMap ->
-            val mutableMap = bankerMap.toMutableMap()
-            mutableMap[email]?.let {
+        viewModelScope.launch {
+            val customer = repository.getCustomerByEmail(email)
+            customer?.let {
                 if (it.pin == currentPin) {
-                    mutableMap[email] = BankManager(
-                        name = it.name,
+                    val updatedCustomer = Customer(
                         email = it.email,
-                        pin = newPin.toString(),
+                        name = it.name,
+                        pin = newPin,
                         accountNumber = it.accountNumber,
-                        branch = it.branch,
-                        role = it.role,
-                        accounts = it.accounts
-                    )
-                    pinChanged = true
+                        accountType = it.accountType
 
-                    if (_currentUser.value is BankManager && (_currentUser.value as BankManager).email == email) {
-                        _currentUser.value = mutableMap[email]
-                    }
+                    )
+                    repository.updateCustomer(updatedCustomer)
+                    pinChanged = true
                 }
             }
-            mutableMap
         }
-
-        _customers.update { customerMap ->
-            val mutableMap = customerMap.toMutableMap()
-            mutableMap[email]?.let {
-                if (it.pin == currentPin) {
-                    mutableMap[email] = Customer(
-                        name = it.name,
-                        email = it.email,
-                        pin = newPin.toString(),
-                        account = it.account
-                    )
-                    pinChanged = true
-                    if (_currentUser.value is Customer && (_currentUser.value as Customer).email == email) {
-                        _currentUser.value = mutableMap[email]
-                    }
-
-                }
-            }
-            mutableMap
-        }
-
         return pinChanged
     }
-
 }

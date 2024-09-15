@@ -9,41 +9,47 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavController
+import com.example.bankapplication.repositery.CustomerRepository
 import com.example.bankapplication.ui.theme.BankApplicationTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             BankApplicationTheme {
                 val navController = rememberNavController()
-                val bankViewModel: BankViewModel = viewModel()//issue with state(issue), calling it completely again and again.
+                val bankViewModel: BankViewModel = viewModel()
 
                 NavHost(navController = navController, startDestination = "login") {
-                    composable("login") {
-                        LoginPage(navController = navController)
-                    }
+                    composable("login") { LoginPage(navController = navController) }
+
                     composable("enterPin/{userType}") { backStackEntry ->
                         EnterPinPage(
                             navController = navController,
-                            userType = backStackEntry.arguments?.getString("userType") ?: ""
+                            userType = backStackEntry.arguments?.getString("userType") ?: "",
+                            bankViewModel = bankViewModel
                         )
                     }
+
                     composable("bankerDetails/{email}") {
                         BankerDetailsScreen(
                             navController = navController,
-                            bankViewModel = bankViewModel,
-
+                            bankViewModel = bankViewModel
                         )
-                    }
-                    composable("customerDetails/{email}") {
 
+                    }
+
+                    composable("customerDetails/{email}") {
                         CustomerDetailsScreen(
                             navController = navController,
                             bankViewModel = bankViewModel
-
                         )
+
+
                     }
+
                     composable("accounts/{userType}") { backStackEntry ->
                         AccountsScreen(
                             navController = navController,
@@ -51,21 +57,16 @@ class MainActivity : ComponentActivity() {
                             userType = backStackEntry.arguments?.getString("userType") ?: ""
                         )
                     }
+
                     composable("settings/{userType}") { backStackEntry ->
                         SettingsScreen(
                             navController = navController,
-                            bankViewModel = bankViewModel,
                             userType = backStackEntry.arguments?.getString("userType") ?: "",
-
+                            bankViewModel = bankViewModel
                         )
                     }
                 }
-
-
             }
         }
     }
-
-
 }
-

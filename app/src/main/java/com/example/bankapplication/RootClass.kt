@@ -1,87 +1,64 @@
 package com.example.bankapplication
 
-import android.content.ContentValues.TAG
-import android.util.Log
-import kotlin.math.log
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.ForeignKey
+import androidx.room.Embedded
 
-open class Person(var name: String, var email: String, var pin: String) {
-
-
-}
-
-class Customer(
-    name: String,
-    email: String,
-    pin: String,
-    var account: Account
-) : Person(name, email, pin) {
-    companion object {
-        val customerMap: MutableMap<String, Customer> = mutableMapOf()
+// Base class for person
 
 
-        init {
-
-
-            customerMap["hi@example.com"] = Customer(
-                "hi",
-                "hi@example.com",
-                "1234",
-                Account("123456", "savings", 1000.0)
-            )
-            customerMap["Hello@example.com"] = Customer(
-                "Hello",
-                "Hello@example.com",
-                "5678",
-                Account("654321", "current", 2000.0)
-            )
-            customerMap["bhak@example.com"] = Customer(
-                "bhak",
-                "bhak@example.com",
-                "9101",
-                Account("112233", "savings", 1500.0)
-            )
-
-        }
-
-    }
-}
-
-class Account(
+// Data class for Account as a Room entity
+@Entity(tableName = "accounts")
+data class Account(
+    @PrimaryKey
+    @ColumnInfo(name = "account_number")
     var accountNumber: String,
+
+    @ColumnInfo(name = "account_type")
     var accountType: String,
+
+    @ColumnInfo(name = "balance")
     var balance: Double
-) {
+)
 
-}
+@Entity(tableName = "customers")
+data class Customer(
+    @PrimaryKey(autoGenerate = true) val id:Int=0,
+    @ColumnInfo(name = "email")
+    val email: String,
+    //Unique Section
+    @ColumnInfo(name = "name")
+    var name: String,
 
-class BankManager(
-    name: String,
-    email: String,
-    pin: String,
+    @ColumnInfo(name = "pin")
+    var pin: String,
+
+    @ColumnInfo(name = "account_number")
     var accountNumber: String,
-    var branch: String,
-    var role: String,
-    var accounts: List<Account> = emptyList()
-) : Person(name, email, pin) {
-    companion object {
 
-        val bankerMap: MutableMap<String, BankManager> = mutableMapOf()
+    @ColumnInfo(name = "account_type")
+    var accountType: String,//Enum banana hai
 
+)
 
-        init {
+// Data class for BankManager as a Room entity
+@Entity(tableName = "bank_managers")
+data class BankManager(
+    @PrimaryKey
+    @ColumnInfo(name = "email")
+    val email: String , // Sample email
 
-            bankerMap["banker@example.com"] = BankManager(
-                "Banker",
-                "banker@example.com",
-                "1234",
-                "000111",
-                "Main Branch",
-                "Admin"
-            )
-        }
+    @ColumnInfo(name = "name")
+    var name: String, // Sample name
 
+    @ColumnInfo(name = "pin")
+    var pin: String, // Sample PIN
 
+    @ColumnInfo(name = "branch")
+    var branch: String, // Sample branch
 
-
-    }
-}
+    @ColumnInfo(name = "role")
+    var role: String // Sample role
+)

@@ -13,7 +13,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
-import com.google.android.material.bottomappbar.BottomAppBar
 
 @Composable
 fun BottomNavigationBar(navController: NavController, userType: String,bankViewModel: BankViewModel) {

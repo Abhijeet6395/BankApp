@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -16,7 +17,7 @@ import androidx.navigation.NavController
 @Composable
 fun CustomerDetailsScreen(
     navController: NavController,
-    bankViewModel: BankViewModel,
+    bankViewModel: BankViewModel= viewModel(),
 
     ) {
 
@@ -31,7 +32,7 @@ fun CustomerDetailsScreen(
 
     val customers by bankViewModel.customers.collectAsState()
     val email by bankViewModel.currentCustomerEmail.collectAsState()
-    val customer = customers[email]
+    val customer = customers.find { it.email == email }
 
 
     Scaffold(
@@ -40,6 +41,7 @@ fun CustomerDetailsScreen(
                 title = { Text("Customer Details") },
                 actions = {
                     IconButton(onClick = {
+                        bankViewModel.onLogoutComplete()
                         navController.navigate("login") {
                             popUpTo(0) {
                                 inclusive = true
@@ -80,14 +82,15 @@ fun CustomerDetailsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(text = "Name: ${it.name}")
                         Text(text = "Email: ${it.email}")
-                        Text(text = "Account Type: ${it.account.accountType}")
-                        Text(text = "Balance: ${it.account.balance}")
+                        Text(text = "Account Number: ${it.accountNumber}")
+                        Text(text = "Account Type: ${it.accountType}")
                     }
                 }
 
+
                 "customerAccounts" -> {
                     // Manage Accounts Section
-                    ManageAccountsSection(bankViewModel = bankViewModel, email = bankViewModel)
+                    ManageAccountsSection(bankViewModel = bankViewModel, email = email)
                 }
 
                 "settings" -> {

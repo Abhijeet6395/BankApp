@@ -14,12 +14,14 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel) {
-    val bankManagers by bankViewModel.bankManagers.collectAsState(emptyMap())
-    val managerEmail = bankManagers.keys.firstOrNull()
-    val banker by remember(managerEmail) { derivedStateOf { managerEmail?.let { bankManagers[it] } } }
+fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewModel = viewModel()) {
+    val bankManager by bankViewModel.bankManager.collectAsState()
     LaunchedEffect(Unit) {
-        bankViewModel.setCurrentCustomerEmail(navController.currentBackStackEntry?.arguments?.getString("email") ?: "")
+        bankViewModel.setCurrentCustomerEmail(
+            navController.currentBackStackEntry?.arguments?.getString(
+                "email"
+            ) ?: ""
+        )
     }
 
     Scaffold(
@@ -28,6 +30,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                 title = { Text("Bank Manager") },
                 actions = {
                     IconButton(onClick = {
+                        bankViewModel.onLogoutComplete()
                         navController.navigate("login") {
                             popUpTo(0) {
                                 inclusive = true
@@ -42,7 +45,11 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = "banker",bankViewModel=bankViewModel)
+            BottomNavigationBar(
+                navController = navController,
+                userType = "banker",
+                bankViewModel = bankViewModel
+            )
         }
     ) { innerPadding ->
         Column(
@@ -51,7 +58,7 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            banker?.let {
+            bankManager?.let {
                 if (navController.currentBackStackEntry?.destination?.route == "bankerDetails/{email}") {
                     Text(
                         text = "Bank Manager Details",
@@ -64,17 +71,14 @@ fun BankerDetailsScreen(navController: NavController, bankViewModel: BankViewMod
                     Text(text = "Role: ${it.role}")
                 }
 
-                // Account Screen Content (Add/Remove Users)
                 if (navController.currentBackStackEntry?.destination?.route == "bankerAccounts") {
-                    ManageAccountsSection(bankViewModel = bankViewModel,email=BankViewModel())
+                    ManageAccountsSection(bankViewModel = bankViewModel, email = String.toString())
                 }
 
-                // Settings Screen Content (Change PIN)
                 if (navController.currentBackStackEntry?.destination?.route == "settings") {
                     SettingsScreen(
-                        navController = navController,
-                        bankViewModel = bankViewModel,
-                        userType = "banker",
+                        navController = navController, bankViewModel = bankViewModel,
+                        userType = "banker"
                     )
                 }
             }
@@ -96,7 +100,7 @@ fun BankManagerDetails(manager: BankManager) {
 }
 
 @Composable
-fun ManageAccountsSection(bankViewModel: BankViewModel,email: BankViewModel) {
+fun ManageAccountsSection(bankViewModel: BankViewModel, email: String) {
     var newName by remember { mutableStateOf("") }
     var newEmail by remember { mutableStateOf("") }
     var newPin by remember { mutableStateOf("") }
@@ -126,7 +130,7 @@ fun ManageAccountsSection(bankViewModel: BankViewModel,email: BankViewModel) {
                 bankViewModel.addCustomer(
                     name = newName,
                     email = newEmail,
-                    pin = newPin.toIntOrNull().toString(),
+                    pin = newPin,
                     accountType = newAccountType,
                     initialBalance = initialBalance.toDoubleOrNull() ?: 0.0
                 )

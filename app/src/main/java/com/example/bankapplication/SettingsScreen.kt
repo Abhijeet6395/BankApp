@@ -89,7 +89,7 @@ fun SettingsScreen(
                         val pinChanged = bankViewModel.changePin(
                             email = email,
                             currentPin = currentPin,
-                            newPin = newPinInt
+                            newPin = newPinInt.toString()
                         )
                         if (pinChanged) {
                             pinChangeSuccess = true
