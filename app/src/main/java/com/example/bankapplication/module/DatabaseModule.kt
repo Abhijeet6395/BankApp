@@ -2,6 +2,8 @@ package com.example.bankapplication.module
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.bankapplication.BankManager
 import com.example.bankapplication.dao.AccountDao
 import com.example.bankapplication.dao.BankManagerDao
@@ -28,7 +30,51 @@ object DatabaseModule {
             context.applicationContext,
             BankDatabase::class.java,
             "bank_database"
-        ).build()
+        ).addMigrations(MIGRATION_1_2)
+            .build()
+    }
+
+
+    val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // 1. Create a temporary table to store existing customer data
+            database.execSQL(
+                "CREATE TABLE customers_temp (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "email TEXT NOT NULL, " +
+                        "name TEXT NOT NULL, " +
+                        "pin TEXT NOT NULL, " +
+                        "account_number TEXT NOT NULL, " +
+                        "account_type TEXT NOT NULL)"
+            )
+
+            // 2. Copy data from the original customers table to the temporary table
+            database.execSQL("INSERT INTO customers_temp SELECT * FROM customers")
+
+            // 3. Drop the original customers table
+            database.execSQL("DROP TABLE customers")
+
+            // 4. Create the new customers table with the foreign key
+            database.execSQL(
+                "CREATE TABLE customers (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "email TEXT NOT NULL, " +
+                        "name TEXT NOT NULL, " +
+                        "pin TEXT NOT NULL, " +
+                        "account_number TEXT NOT NULL, " +
+                        "account_type TEXT NOT NULL, " +
+                        "FOREIGN KEY (account_number) REFERENCES accounts(account_number) ON DELETE CASCADE)"
+            )
+
+            // 5. Insert data back into the customers table from the temporary table
+            database.execSQL("INSERT INTO customers SELECT * FROM customers_temp")
+
+            //  6.Drop the temporary table
+            database.execSQL("DROP TABLE customers_temp")
+
+            //  7.Pre-populate the accounts table with data for existing customers
+            database.execSQL("INSERT INTO accounts (account_number, account_type, balance) SELECT account_number, account_type, 0.0 FROM customers")
+        }
     }
 
     @Provides

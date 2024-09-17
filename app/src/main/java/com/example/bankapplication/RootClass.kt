@@ -5,10 +5,26 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 import androidx.room.Embedded
+import androidx.room.TypeConverter
 
 // Base class for person
 
+enum class AccountType {
+    SAVINGS,
+    CURRENT
+}
 
+class AccountTypeConverter {
+    @TypeConverter
+    fun fromAccountType(value: AccountType): String {
+        return value.name
+    }
+
+    @TypeConverter
+    fun toAccountType(value: String): AccountType {
+        return AccountType.valueOf(value)
+    }
+}
 // Data class for Account as a Room entity
 @Entity(tableName = "accounts")
 data class Account(
@@ -22,8 +38,18 @@ data class Account(
     @ColumnInfo(name = "balance")
     var balance: Double
 )
+@Entity(
+    tableName = "customers",
+    foreignKeys = [
+        ForeignKey(
+            entity = Account::class,
+            parentColumns = ["account_number"],
+            childColumns = ["account_number"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 
-@Entity(tableName = "customers")
 data class Customer(
     @PrimaryKey(autoGenerate = true) val id:Int=0,
     @ColumnInfo(name = "email")

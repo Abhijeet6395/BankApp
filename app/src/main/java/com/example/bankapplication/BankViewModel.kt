@@ -65,6 +65,12 @@ class BankViewModel @Inject constructor(
         _currentCustomerEmail.value = email
     }
 
+    fun getBankManagerDetails(email: String) {
+        viewModelScope.launch {
+            val manager = repository.getBankManagerByEmail(email)
+            _bankManager.value = manager
+        }
+    }
     fun addCustomer(
         name: String,
         email: String,
