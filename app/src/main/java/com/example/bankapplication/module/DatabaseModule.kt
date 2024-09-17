@@ -71,9 +71,6 @@ object DatabaseModule {
 
             //  6.Drop the temporary table
             database.execSQL("DROP TABLE customers_temp")
-
-            //  7.Pre-populate the accounts table with data for existing customers
-            database.execSQL("INSERT INTO accounts (account_number, account_type, balance) SELECT account_number, account_type, 0.0 FROM customers")
         }
     }
 

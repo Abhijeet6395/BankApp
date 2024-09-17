@@ -1,9 +1,9 @@
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import com.example.bankapplication.Account
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,10 +12,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.bankapplication.BankViewModel
 import com.example.bankapplication.BottomNavigationBar
+
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +46,6 @@ fun AccountsScreen(
     fun isValidEmail(email: String): Boolean {
         return email.contains("@") && email.endsWith(".com")
     }
-
     LaunchedEffect(email) {
         val cust = customer.find { it.email == email }
         cust?.let {
@@ -54,7 +53,6 @@ fun AccountsScreen(
             balance = account?.balance ?: 0.0
         }
     }
-
     LaunchedEffect(key1 = bankViewModel.triggerRecomposition) {
         val cust = customer.find { it.email == email }
         cust?.let {
@@ -62,7 +60,6 @@ fun AccountsScreen(
             balance = account?.balance ?: 0.0
         }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -105,10 +102,12 @@ fun AccountsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "Current Balance: $balance",
-                    style = MaterialTheme.typography.headlineMedium
-                )
+
+
+                    Text(
+                        text = "Current Balance: $balance",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
 
             } else if (userType == "banker") {
                 LazyColumn(
@@ -121,7 +120,6 @@ fun AccountsScreen(
                             // This will trigger recomposition when triggerRecomposition changes
                         }
                     }
-
                     if (customers.isEmpty()) {
                         item {
                             Text(
@@ -133,33 +131,11 @@ fun AccountsScreen(
                         }
                     } else {
                         items(customers) { customer ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White,
-                                    contentColor = Color.Black
-                                )
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "Name: ${customer.name}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontSize = 18.sp
-                                    )
-                                    Text(
-                                        text = "Email: ${customer.email}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
+                            Text(
+                                text = "${customer.name} (${customer.email})",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
                         }
                     }
                 }
@@ -196,8 +172,8 @@ fun AccountsScreen(
 
                 Row {
                     Button(onClick = {
-                        if (inputEmail.isNotBlank() && name.isNotBlank() && pin.isNotBlank()) {
-                            if (isValidEmail(inputEmail)) {
+                        if (email.isNotBlank() && name.isNotBlank() && pin.isNotBlank()) {
+                            if (isValidEmail(email)) {
                                 scope.launch {
                                     bankViewModel.addCustomer(
                                         name = name,
@@ -241,164 +217,222 @@ fun AccountsScreen(
             }
         }
 
-        // Dialogs (Add Money, Withdraw Money, Remove Customer)
+        // Dialog for adding money
         if (showAddMoneyDialog) {
-            AddMoneyDialog(
-                addAmount = addAmount,
-                onAddAmountChange = { addAmount = it },
-                onConfirm = {
-                    scope.launch {
-                        val currentCustomer = customers.find { it.email == email }
-                        currentCustomer?.let { customer ->
-                            val account = bankViewModel.getAccountByAccountNumber(customer.accountNumber)
-                            account?.let {
-                                bankViewModel.addMoney(account.accountNumber, addAmount.toDouble())
-                                Toast.makeText(context, "Money added successfully", Toast.LENGTH_SHORT).show()
-                                showAddMoneyDialog = false
-                            }
-                        }
+            AlertDialog(
+                onDismissRequest = { showAddMoneyDialog = false },
+                title = { Text("Add Money") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = addAmount,
+                            onValueChange = { addAmount = it },
+                            label = { Text("Amount") },
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = pin,
+                            onValueChange = { pin = it },
+                            label = { Text("PIN") },
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 },
-                onCancel = { showAddMoneyDialog = false }
+                confirmButton = {
+                    Button(onClick = {
+                        scope.launch {
+                            if (addAmount.isNotBlank() && pin.isNotBlank()) {
+                                val amount = addAmount.toDoubleOrNull()
+                                if (amount != null && amount > 0) {
+                                    val signInSuccess = bankViewModel.signIn(email, pin, "customer")
+                                    if (signInSuccess) {
+                                        bankViewModel.addMoney(email, amount)
+                                        val cust = customer.find { it.email == email }
+                                        cust?.let {
+                                            val account = bankViewModel.getAccountByAccountNumber(it.accountNumber)
+                                            balance = account?.balance ?: 0.0
+                                        }
+                                        Toast.makeText(
+                                            context,
+                                            "Money added successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        addAmount = ""
+                                        pin = ""
+                                        showAddMoneyDialog = false
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Credential is wrong",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Please enter a valid amount",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            } else {
+                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    }) {
+                        Text("Add")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showAddMoneyDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
 
+        // Dialog for withdrawing money
         if (showWithdrawMoneyDialog) {
-            WithdrawMoneyDialog(
-                withdrawAmount = withdrawAmount,
-                onWithdrawAmountChange = { withdrawAmount = it },
-                onConfirm = {
-                    scope.launch {
-                        val currentCustomer = customers.find { it.email == email }
-                        currentCustomer?.let { customer ->
-                            val account = bankViewModel.getAccountByAccountNumber(customer.accountNumber)
-                            account?.let {
-                                bankViewModel.withdrawMoney(account.accountNumber, withdrawAmount.toDouble())
-                                Toast.makeText(context, "Money withdrawn successfully", Toast.LENGTH_SHORT).show()
-                                showWithdrawMoneyDialog = false
-                            }
-                        }
+            AlertDialog(
+                onDismissRequest = { showWithdrawMoneyDialog = false },
+                title = { Text("Withdraw Money") },
+                text = {
+                    Column {
+
+                        OutlinedTextField(
+                            value = withdrawAmount,
+                            onValueChange = { withdrawAmount = it },
+                            label = { Text("Amount") },
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = pin,
+                            onValueChange = { pin = it },
+                            label = { Text("PIN") },
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 },
-                onCancel = { showWithdrawMoneyDialog = false }
+                confirmButton = {
+                    Button(onClick = {
+                        scope.launch {
+                            if (withdrawAmount.isNotBlank() && pin.isNotBlank()) {
+                                val amount = withdrawAmount.toDoubleOrNull()
+                                if (amount != null && amount > 0) {
+                                    val signInSuccess = bankViewModel.signIn(email, pin, "customer")
+                                    if (signInSuccess) {
+                                        bankViewModel.withdrawMoney(email, amount)
+                                        val cust = customer.find { it.email == email }
+                                        cust?.let {
+                                            val account = bankViewModel.getAccountByAccountNumber(it.accountNumber)
+                                            balance = account?.balance ?: 0.0
+                                        }
+                                        Toast.makeText(
+                                            context,
+                                            "Money withdrawn successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        withdrawAmount = ""
+                                        pin = ""
+                                        showWithdrawMoneyDialog = false
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Credential is wrong",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Please enter a valid amount",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            } else {
+                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    }) {
+                        Text("Withdraw")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showWithdrawMoneyDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
 
+        // Dialog for removing a customer
         if (showRemoveDialog) {
-            RemoveCustomerDialog(
-                removeEmail = removeEmail,
-                onRemoveEmailChange = { removeEmail = it },
-                onConfirm = {
-                    scope.launch {
-                        bankViewModel.removeCustomer(removeEmail)
-                        Toast.makeText(context, "Customer removed successfully", Toast.LENGTH_SHORT).show()
-                        showRemoveDialog = false
+            AlertDialog(
+                onDismissRequest = { showRemoveDialog = false },
+                title = { Text("Remove Customer") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = removeEmail,
+                            onValueChange = { removeEmail = it },
+                            label = { Text("Email ID") },
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (removeError.isNotBlank()) {
+                            Text(
+                                text = removeError,
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 },
-                onCancel = { showRemoveDialog = false },
-                errorMessage = removeError
+                confirmButton = {
+                    Button(onClick = {
+                        scope.launch {
+                            if (removeEmail.isNotBlank()) {
+                                if (isValidEmail(removeEmail)) {
+                                    val result = bankViewModel.removeCustomer(removeEmail)
+                                    if (result) {
+                                        Toast.makeText(
+                                            context,
+                                            "Customer removed successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        removeEmail = ""
+                                        showRemoveDialog = false
+                                    } else {
+                                        removeError = "Failed to remove customer"
+                                    }
+                                } else {
+                                    removeError = "Invalid email format"
+                                }
+                            } else {
+                                removeError = "Email field cannot be empty"
+                            }
+                        }
+                    }) {
+                        Text("Remove")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showRemoveDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
     }
 }
-
-@Composable
-fun AddMoneyDialog(
-    addAmount: String,
-    onAddAmountChange: (String) -> Unit,
-    onConfirm: () -> Unit,
-    onCancel: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = { },
-        title = { Text("Add Money") },
-        text = {
-            OutlinedTextField(
-                value = addAmount,
-                onValueChange = onAddAmountChange,
-                label = { Text("Amount") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-            )
-        },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text("Add")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onCancel) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun WithdrawMoneyDialog(
-    withdrawAmount: String,
-    onWithdrawAmountChange: (String) -> Unit,
-    onConfirm: () -> Unit,
-    onCancel: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = { },
-        title = { Text("Withdraw Money") },
-        text = {
-            OutlinedTextField(
-                value = withdrawAmount,
-                onValueChange = onWithdrawAmountChange,
-                label = { Text("Amount") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-            )
-        },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text("Withdraw")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onCancel) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun RemoveCustomerDialog(
-    removeEmail: String,
-    onRemoveEmailChange: (String) -> Unit,
-    onConfirm: () -> Unit,
-    onCancel: () -> Unit,
-    errorMessage: String
-) {
-    AlertDialog(
-        onDismissRequest = { },
-        title = { Text("Remove Customer") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = removeEmail,
-                    onValueChange = onRemoveEmailChange,
-                    label = { Text("Email ID") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (errorMessage.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = errorMessage, color = Color.Red)
-                }
-            }
-        },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text("Remove")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onCancel) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
