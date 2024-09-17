@@ -82,7 +82,7 @@ class BankViewModel @Inject constructor(
             val accountNumber = UUID.randomUUID().toString()
             val newAccount = Account(
                 accountNumber = accountNumber,
-                accountType = accountType,
+                accountType = accountType.toString(),
                 balance = initialBalance
             )
             val newCustomer = Customer(

@@ -3,7 +3,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import com.example.bankapplication.Account
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.bankapplication.AccountType
 import com.example.bankapplication.BankViewModel
 import com.example.bankapplication.BottomNavigationBar
 
@@ -25,6 +25,8 @@ fun AccountsScreen(
     bankViewModel: BankViewModel,
     userType: String
 ) {
+    var selectedAccountType by remember { mutableStateOf(AccountType.SAVINGS) }
+    var accountType by remember { mutableStateOf(AccountType.SAVINGS.name) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val customers by bankViewModel.customers.collectAsState()
@@ -104,10 +106,10 @@ fun AccountsScreen(
 
 
 
-                    Text(
-                        text = "Current Balance: $balance",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
+                Text(
+                    text = "Current Balance: $balance",
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
             } else if (userType == "banker") {
                 LazyColumn(
@@ -169,27 +171,55 @@ fun AccountsScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+                OutlinedTextField(
+                    value = accountType,
+                    onValueChange = {
+                        accountType = it
+                    },
+                    label = { Text("Account Type (SAVINGS or CURRENT)") },
+                    isError = accountType !in listOf(
+                        AccountType.SAVINGS.name,
+                        AccountType.CURRENT.name
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Row {
                     Button(onClick = {
-                        if (email.isNotBlank() && name.isNotBlank() && pin.isNotBlank()) {
+                        if (email.isNotBlank() && name.isNotBlank() && pin.isNotBlank() && accountType.isNotBlank()) {
                             if (isValidEmail(email)) {
-                                scope.launch {
-                                    bankViewModel.addCustomer(
-                                        name = name,
-                                        email = inputEmail,
-                                        pin = pin,
-                                        accountType = "Savings",
-                                        initialBalance = 0.0
+                                if (accountType in listOf(
+                                        AccountType.SAVINGS.name,
+                                        AccountType.CURRENT.name
                                     )
+                                ) {
+                                    scope.launch {
+                                        val accountType = when (selectedAccountType) {
+                                            AccountType.SAVINGS -> AccountType.SAVINGS
+                                            AccountType.CURRENT -> AccountType.CURRENT
+                                        }
+                                        bankViewModel.addCustomer(
+                                            name = name,
+                                            email = inputEmail,
+                                            pin = pin,
+                                            accountType = accountType.toString(),
+                                            initialBalance = 0.0
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            "Customer added successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        inputEmail = ""
+                                        name = ""
+                                        pin = ""
+                                    }
+
+                                } else {
                                     Toast.makeText(
                                         context,
-                                        "Customer added successfully",
+                                        "Invalid account type. Please enter SAVINGS or CURRENT.",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    inputEmail = ""
-                                    name = ""
-                                    pin = ""
                                 }
                             } else {
                                 Toast.makeText(
@@ -254,7 +284,8 @@ fun AccountsScreen(
                                         bankViewModel.addMoney(email, amount)
                                         val cust = customer.find { it.email == email }
                                         cust?.let {
-                                            val account = bankViewModel.getAccountByAccountNumber(it.accountNumber)
+                                            val account =
+                                                bankViewModel.getAccountByAccountNumber(it.accountNumber)
                                             balance = account?.balance ?: 0.0
                                         }
                                         Toast.makeText(
@@ -280,7 +311,11 @@ fun AccountsScreen(
                                     ).show()
                                 }
                             } else {
-                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                Toast.makeText(
+                                    context,
+                                    "Please fill in all fields",
+                                    Toast.LENGTH_SHORT
+                                )
                                     .show()
                             }
                         }
@@ -334,7 +369,8 @@ fun AccountsScreen(
                                         bankViewModel.withdrawMoney(email, amount)
                                         val cust = customer.find { it.email == email }
                                         cust?.let {
-                                            val account = bankViewModel.getAccountByAccountNumber(it.accountNumber)
+                                            val account =
+                                                bankViewModel.getAccountByAccountNumber(it.accountNumber)
                                             balance = account?.balance ?: 0.0
                                         }
                                         Toast.makeText(
@@ -360,7 +396,11 @@ fun AccountsScreen(
                                     ).show()
                                 }
                             } else {
-                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT)
+                                Toast.makeText(
+                                    context,
+                                    "Please fill in all fields",
+                                    Toast.LENGTH_SHORT
+                                )
                                     .show()
                             }
                         }
