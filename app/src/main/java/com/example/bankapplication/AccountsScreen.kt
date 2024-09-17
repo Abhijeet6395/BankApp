@@ -43,7 +43,6 @@ fun AccountsScreen(
     var removeError by remember { mutableStateOf("") }
     val customer by bankViewModel.customers.collectAsState()
     var balance by remember { mutableDoubleStateOf(0.0) }
-
     // Function to validate email format
     fun isValidEmail(email: String): Boolean {
         return email.contains("@") && email.endsWith(".com")
@@ -197,24 +196,34 @@ fun AccountsScreen(
                                             AccountType.SAVINGS -> AccountType.SAVINGS
                                             AccountType.CURRENT -> AccountType.CURRENT
                                         }
-                                        bankViewModel.addCustomer(
+                                       val isCustomerAdded = bankViewModel.addCustomer(
                                             name = name,
                                             email = inputEmail,
                                             pin = pin,
                                             accountType = accountType.toString(),
                                             initialBalance = 0.0
                                         )
-                                        Toast.makeText(
-                                            context,
-                                            "Customer added successfully",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        inputEmail = ""
-                                        name = ""
-                                        pin = ""
+                                        if(isCustomerAdded) {
+                                            Toast.makeText(
+                                                context,
+                                                "Customer added successfully",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            inputEmail = ""
+                                            name = ""
+                                            pin = ""
+                                        }
+                                        else {
+                                            Toast.makeText(
+                                                context,
+                                                "Email already exists",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
 
-                                } else {
+                                }
+                                else {
                                     Toast.makeText(
                                         context,
                                         "Invalid account type. Please enter SAVINGS or CURRENT.",

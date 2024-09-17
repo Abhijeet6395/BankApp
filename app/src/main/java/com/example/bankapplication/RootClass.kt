@@ -52,7 +52,7 @@ data class Account(
 
 data class Customer(
     @PrimaryKey(autoGenerate = true) val id:Int=0,
-    @ColumnInfo(name = "email")
+    @ColumnInfo(name = "email", index = true)
     val email: String,
     //Unique Section
     @ColumnInfo(name = "name")

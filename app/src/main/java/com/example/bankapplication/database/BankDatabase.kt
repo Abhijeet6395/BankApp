@@ -1,5 +1,6 @@
 package com.example.bankapplication.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -11,7 +12,11 @@ import com.example.bankapplication.dao.AccountDao
 import com.example.bankapplication.dao.CustomerDao
 import com.example.bankapplication.dao.BankManagerDao
 
-@Database(entities = [Customer::class, Account::class, BankManager::class], version = 2)
+@Database(
+    entities = [Customer::class, Account::class, BankManager::class],
+    version = 3,
+   // autoMigrations = [AutoMigration(from = 1, to = 2)]
+)
 @TypeConverters(AccountTypeConverter::class)
 abstract class BankDatabase : RoomDatabase() {
 

@@ -2,10 +2,16 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt") // Ensure this is for Kotlin annotation processing
-    id("com.google.dagger.hilt.android") // Hilt Android plugin
-    id("dagger.hilt.android.plugin") // Dagger Hilt plugin
-}
+    id("com.google.dagger.hilt.android")
+//   id ("androidx.room")
 
+//    id("com.google.devtools.ksp") version "2.0.20-1.0.24" // Replace with the latest compatible version
+//    kotlin("jvm")
+
+}
+//room{
+//    schemaDirectory("$projectDir/schemas")
+//}
 android {
     namespace = "com.example.bankapplication"
     compileSdk = 34
@@ -16,10 +22,21 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
+//        kapt {
+//            "room.schemaLocation" ="$projectDir/schemas"
+//        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas")
         }
     }
 
@@ -48,11 +65,13 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            pickFirsts+="META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
 }
 
 dependencies {
+    implementation(libs.identity.jvm)
     val room_version = "2.6.1" // Room version
 
     // Core dependencies

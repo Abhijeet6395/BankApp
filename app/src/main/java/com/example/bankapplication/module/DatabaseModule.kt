@@ -30,7 +30,7 @@ object DatabaseModule {
             context.applicationContext,
             BankDatabase::class.java,
             "bank_database"
-        ).addMigrations(MIGRATION_1_2)
+     ).fallbackToDestructiveMigration()
             .build()
     }
 
@@ -47,7 +47,6 @@ object DatabaseModule {
                         "account_number TEXT NOT NULL, " +
                         "account_type TEXT NOT NULL)"
             )
-
             // 2. Copy data from the original customers table to the temporary table
             database.execSQL("INSERT INTO customers_temp SELECT * FROM customers")
 

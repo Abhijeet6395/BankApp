@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,7 +121,7 @@ fun ManageAccountsSection(bankViewModel: BankViewModel, email: String) {
     var newPin by remember { mutableStateOf("") }
     var newAccountType by remember { mutableStateOf("") }
     var initialBalance by remember { mutableStateOf("") }
-
+    val newCoroutineScope =rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Manage Accounts",
@@ -164,14 +166,15 @@ fun ManageAccountsSection(bankViewModel: BankViewModel, email: String) {
 
         Button(
             onClick = {
-                bankViewModel.addCustomer(
-                    name = newName,
-                    email = newEmail,
-                    pin = newPin,
-                    accountType = newAccountType,
-                    initialBalance = initialBalance.toDoubleOrNull() ?: 0.0
-                )
-
+                newCoroutineScope.launch {
+                    bankViewModel.addCustomer(
+                        name = newName,
+                        email = newEmail,
+                        pin = newPin,
+                        accountType = newAccountType,
+                        initialBalance = initialBalance.toDoubleOrNull() ?: 0.0
+                    )
+                }
                 newName = ""
                 newEmail = ""
                 newPin = ""

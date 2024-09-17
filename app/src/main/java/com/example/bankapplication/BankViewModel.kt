@@ -71,18 +71,19 @@ class BankViewModel @Inject constructor(
             _bankManager.value = manager
         }
     }
-    fun addCustomer(
+    suspend fun addCustomer(
         name: String,
         email: String,
         pin: String,
         accountType: String,
         initialBalance: Double
-    ) {
-        viewModelScope.launch {
+    ): Boolean {
+        val existingCustomer = repository.getCustomerByEmail(email)
+        if (existingCustomer == null) {
             val accountNumber = UUID.randomUUID().toString()
             val newAccount = Account(
-                accountNumber = accountNumber,
-                accountType = accountType.toString(),
+                accountNumber= accountNumber,
+                accountType = accountType,
                 balance = initialBalance
             )
             val newCustomer = Customer(
@@ -96,6 +97,9 @@ class BankViewModel @Inject constructor(
             repository.insertCustomer(newCustomer)
             _customers.value = repository.getAllCustomers()
             triggerRecomposition = !triggerRecomposition
+            return true
+        } else {
+            return false
         }
     }
    suspend fun getAccountByAccountNumber(accountNumber: String): Account? {
