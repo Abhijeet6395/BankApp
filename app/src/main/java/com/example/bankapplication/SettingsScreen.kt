@@ -1,6 +1,7 @@
 package com.example.bankapplication
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -34,30 +35,35 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Settings", color = Color.Black) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF6200EA),
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White
                 )
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController, userType = userType, bankViewModel = bankViewModel)
+            BottomNavigationBar(
+                navController = navController,
+                userType = userType,
+                bankViewModel = bankViewModel
+            )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(Color.LightGray)
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Settings")
+            Text("Settings", color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = { showChangePinDialog = true }) {
-                Text("Change PIN")
+                Text("Change PIN", color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -94,22 +100,28 @@ fun SettingsScreen(
                                     if (pinChanged) {
                                         pinChangeSuccess = true
                                         pinChangeError = null
-                                        Toast.makeText(context, "PIN changed successfully", Toast.LENGTH_SHORT).show()
                                         showChangePinDialog = false
                                     } else {
                                         pinChangeError = "Current PIN is incorrect."
                                         pinChangeSuccess = false
-                                        Toast.makeText(context, "PIN change failed", Toast.LENGTH_SHORT).show()
                                     }
                                 } else {
                                     pinChangeError = "New PIN must be a number."
                                     pinChangeSuccess = false
-                                    Toast.makeText(context, "New PIN must be a number", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "New PIN must be a number",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             } else {
                                 pinChangeError = "Please fill in all fields."
                                 pinChangeSuccess = false
-                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Please fill in all fields",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     } else {

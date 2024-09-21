@@ -1,4 +1,5 @@
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -25,7 +27,7 @@ fun AccountsScreen(
     bankViewModel: BankViewModel,
     userType: String
 ) {
-    var selectedAccountType by remember { mutableStateOf(AccountType.SAVINGS) }
+    val selectedAccountType by remember { mutableStateOf(AccountType.SAVINGS) }
     var accountType by remember { mutableStateOf(AccountType.SAVINGS.name) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -43,6 +45,7 @@ fun AccountsScreen(
     var removeError by remember { mutableStateOf("") }
     val customer by bankViewModel.customers.collectAsState()
     var balance by remember { mutableDoubleStateOf(0.0) }
+
     // Function to validate email format
     fun isValidEmail(email: String): Boolean {
         return email.contains("@") && email.endsWith(".com")
@@ -64,11 +67,17 @@ fun AccountsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Accounts") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF6200EA),
-                    titleContentColor = Color.White
-                )
+                title = {
+                    Text(
+                        "Accounts",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor =
+                    MaterialTheme.colorScheme.primary
+                ),
             )
         },
         bottomBar = {
@@ -82,6 +91,7 @@ fun AccountsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFFE0E0E0))
                 .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top,
@@ -107,7 +117,8 @@ fun AccountsScreen(
 
                 Text(
                     text = "Current Balance: $balance",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.Black
                 )
 
             } else if (userType == "banker") {
@@ -135,7 +146,8 @@ fun AccountsScreen(
                             Text(
                                 text = "${customer.name} (${customer.email})",
                                 style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(vertical = 8.dp)
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = Color.Black
                             )
                         }
                     }
@@ -147,7 +159,11 @@ fun AccountsScreen(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Name") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -156,7 +172,9 @@ fun AccountsScreen(
                     value = inputEmail,
                     onValueChange = { inputEmail = it },
                     label = { Text("Email ID") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults
+                        .colors(focusedTextColor = Color.Black),
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -166,7 +184,9 @@ fun AccountsScreen(
                     onValueChange = { pin = it },
                     label = { Text("PIN") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.NumberPassword),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults
+                        .colors(focusedTextColor = Color.Black)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +200,8 @@ fun AccountsScreen(
                         AccountType.SAVINGS.name,
                         AccountType.CURRENT.name
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.Black)
                 )
                 Row {
                     Button(onClick = {
@@ -196,14 +217,14 @@ fun AccountsScreen(
                                             AccountType.SAVINGS -> AccountType.SAVINGS
                                             AccountType.CURRENT -> AccountType.CURRENT
                                         }
-                                       val isCustomerAdded = bankViewModel.addCustomer(
+                                        val isCustomerAdded = bankViewModel.addCustomer(
                                             name = name,
                                             email = inputEmail,
                                             pin = pin,
                                             accountType = accountType.toString(),
                                             initialBalance = 0.0
                                         )
-                                        if(isCustomerAdded) {
+                                        if (isCustomerAdded) {
                                             Toast.makeText(
                                                 context,
                                                 "Customer added successfully",
@@ -212,8 +233,7 @@ fun AccountsScreen(
                                             inputEmail = ""
                                             name = ""
                                             pin = ""
-                                        }
-                                        else {
+                                        } else {
                                             Toast.makeText(
                                                 context,
                                                 "Email already exists",
@@ -222,8 +242,7 @@ fun AccountsScreen(
                                         }
                                     }
 
-                                }
-                                else {
+                                } else {
                                     Toast.makeText(
                                         context,
                                         "Invalid account type. Please enter SAVINGS or CURRENT.",

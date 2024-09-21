@@ -13,11 +13,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
-
 @Composable
-fun BottomNavigationBar(navController: NavController, userType: String,bankViewModel: BankViewModel) {
+fun BottomNavigationBar(navController: NavController, userType: String, bankViewModel: BankViewModel) {
     val email by bankViewModel.currentCustomerEmail.collectAsState()
 
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     BottomAppBar(
         containerColor = Color(0xFF6200EA),
@@ -26,33 +26,35 @@ fun BottomNavigationBar(navController: NavController, userType: String,bankViewM
         // Home Button
         IconButton(
             onClick = {
-
                 val destination = when (userType) {
                     "banker" -> "bankerDetails/$email"
                     else -> "customerDetails/$email"
                 }
-                Log.d("Navigation", "Navigating to: $destination")
-
                 navController.navigate(destination) {
-
                     launchSingleTop = true
                     restoreState = true
                     popUpTo(navController.graph.startDestinationId) {
                         inclusive = false
-                        }
                     }
-
+                }
             },
             modifier = Modifier.weight(1f)
         ) {
-            Icon(Icons.Default.Home, contentDescription = "Home")
+            Icon(
+                imageVector = Icons.Default.Home,
+                contentDescription = "Home",
+                tint = if (currentRoute?.startsWith("bankerDetails") == true || currentRoute?.startsWith("customerDetails") == true) {
+                    Color.Yellow // Highlight selected icon
+                } else {
+                    Color.White
+                }
+            )
         }
 
         // Accounts Button
         IconButton(
             onClick = {
                 navController.navigate("accounts/$userType") {
-                    Log.d("Navigation","NavigatingTo:$email")
                     launchSingleTop = true
                     restoreState = true
                     popUpTo(navController.graph.startDestinationId) {
@@ -62,7 +64,15 @@ fun BottomNavigationBar(navController: NavController, userType: String,bankViewM
             },
             modifier = Modifier.weight(1f)
         ) {
-            Icon(Icons.Default.AccountCircle, contentDescription = "Accounts")
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Accounts",
+                tint = if (currentRoute == "accounts/$userType") {
+                    Color.Yellow // Highlight selected icon
+                } else {
+                    Color.White
+                }
+            )
         }
 
         // Settings Button
@@ -78,7 +88,15 @@ fun BottomNavigationBar(navController: NavController, userType: String,bankViewM
             },
             modifier = Modifier.weight(1f)
         ) {
-            Icon(Icons.Default.Settings, contentDescription = "Settings")
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
+                tint = if (currentRoute?.startsWith("settings") == true) {
+                    Color.Yellow // Highlight selected icon
+                } else {
+                    Color.White
+                }
+            )
         }
     }
 }

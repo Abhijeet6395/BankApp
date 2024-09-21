@@ -1,8 +1,9 @@
 package com.example.bankapplication
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
@@ -10,6 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,7 +40,19 @@ fun CustomerDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Customer Details") },
+                title = {
+                    Text(
+                        text = "Customer Details",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White
+                ),
                 actions = {
                     IconButton(onClick = {
                         bankViewModel.onLogoutComplete()
@@ -48,9 +64,14 @@ fun CustomerDetailsScreen(
                             restoreState = false
                         }
                     }) {
-                        Icon(Icons.Filled.Clear, contentDescription = "Logout")
+                        Icon(
+                            Icons.Filled.Clear,
+                            contentDescription = "Logout",
+                            tint = Color.White
+                        )
                     }
                 },
+                modifier = Modifier.shadow(8.dp)
             )
         },
         bottomBar = {
@@ -65,6 +86,7 @@ fun CustomerDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(Color.LightGray)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -96,22 +118,58 @@ fun CustomerDetailsView(customer: Customer) {
     Icon(
         imageVector = Icons.Filled.Person,
         contentDescription = "Customer Icon",
-        modifier = Modifier.size(80.dp),
-        tint = MaterialTheme.colorScheme.primary
+        modifier = Modifier
+            .size(100.dp)
+            .clip(CircleShape)
+            .background(
+                Brush.radialGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
+                    )
+                )
+            )
+            .padding(16.dp),
+        tint = Color.White
     )
     Spacer(modifier = Modifier.height(16.dp))
     Text(
-        text = "Customer Details",
-        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+        text = "Customer Details", color = Color.Black,
+        style = MaterialTheme.typography.headlineMedium.copy(
+            fontWeight = FontWeight.Bold
+        )
     )
     Spacer(modifier = Modifier.height(8.dp))
-    Text(text = "Name: ${customer.name}", style = MaterialTheme.typography.bodyLarge)
-    Text(text = "Email: ${customer.email}", style = MaterialTheme.typography.bodyLarge)
+    Text(
+        text = "Name: ${customer.name}",
+        style = MaterialTheme.typography.bodyLarge.copy(
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+    )
+    Text(
+        text = "Email: ${customer.email}",
+        style = MaterialTheme.typography.bodyLarge.copy(
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+    )
     Text(
         text = "Account Number: ${customer.accountNumber}",
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge.copy(
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
     )
-    Text(text = "Account Type: ${customer.accountType}", style = MaterialTheme.typography.bodyLarge)
+    Text(
+        text = "Account Type: ${customer.accountType}",
+        style = MaterialTheme.typography.bodyLarge.copy(
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+    )
     Spacer(modifier = Modifier.height(24.dp))
-    Divider(thickness = 1.dp, color = Color.Gray)
+    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
 }
+
+
